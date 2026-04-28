@@ -6,7 +6,6 @@ exec "${CODEQL_DIST}/codeql" database index-files \
     --prune="**/*.testproj" \
     --include-extension=.php \
     --include-extension=.phtml \
-    --include="**/composer.json" \
     --size-limit=5m \
     --language=php \
     --working-dir=.\
