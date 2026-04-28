@@ -1,0 +1,1478 @@
+// CodeQL database schema for PHP
+// Automatically generated from the tree-sitter grammar; do not edit
+
+/*- Files and folders -*/
+
+/**
+ * The location of an element.
+ * The location spans column `startcolumn` of line `startline` to
+ * column `endcolumn` of line `endline` in file `file`.
+ * For more information, see
+ * [Locations](https://codeql.github.com/docs/writing-codeql-queries/providing-locations-in-codeql-queries/).
+ */
+locations_default(
+  unique int id: @location_default,
+  int file: @file ref,
+  int beginLine: int ref,
+  int beginColumn: int ref,
+  int endLine: int ref,
+  int endColumn: int ref
+);
+
+files(
+  unique int id: @file,
+  string name: string ref
+);
+
+folders(
+  unique int id: @folder,
+  string name: string ref
+);
+
+@container = @file | @folder
+
+containerparent(
+  int parent: @container ref,
+  unique int child: @container ref
+);
+
+/*- Empty location -*/
+
+empty_location(
+  int location: @location_default ref
+);
+
+/*- Source location prefix -*/
+
+/**
+ * The source location of the snapshot.
+ */
+sourceLocationPrefix(string prefix : string ref);
+
+/*- Diagnostic messages -*/
+
+diagnostics(
+  unique int id: @diagnostic,
+  int severity: int ref,
+  string error_tag: string ref,
+  string error_message: string ref,
+  string full_error_message: string ref,
+  int location: @location_default ref
+);
+
+/*- Diagnostic messages: severity -*/
+
+case @diagnostic.severity of
+  10 = @diagnostic_debug
+| 20 = @diagnostic_info
+| 30 = @diagnostic_warning
+| 40 = @diagnostic_error
+;
+
+/*- YAML -*/
+
+#keyset[parent, idx]
+yaml (unique int id: @yaml_node,
+      int kind: int ref,
+      int parent: @yaml_node_parent ref,
+      int idx: int ref,
+      string tag: string ref,
+      string tostring: string ref);
+
+case @yaml_node.kind of
+  0 = @yaml_scalar_node
+| 1 = @yaml_mapping_node
+| 2 = @yaml_sequence_node
+| 3 = @yaml_alias_node
+;
+
+@yaml_collection_node = @yaml_mapping_node | @yaml_sequence_node;
+
+@yaml_node_parent = @yaml_collection_node | @file;
+
+yaml_anchors (unique int node: @yaml_node ref,
+              string anchor: string ref);
+
+yaml_aliases (unique int alias: @yaml_alias_node ref,
+              string target: string ref);
+
+yaml_scalars (unique int scalar: @yaml_scalar_node ref,
+              int style: int ref,
+              string value: string ref);
+
+yaml_errors (unique int id: @yaml_error,
+             string message: string ref);
+
+yaml_locations(unique int locatable: @yaml_locatable ref,
+             int location: @location_default ref);
+
+@yaml_locatable = @yaml_node | @yaml_error;
+
+/*- Database metadata -*/
+
+/**
+ * The CLI will automatically emit applicable tuples for this table,
+ * such as `databaseMetadata("isOverlay", "true")` when building an
+ * overlay database.
+ */
+databaseMetadata(
+  string metadataKey: string ref,
+  string value: string ref
+);
+
+/*- Overlay support -*/
+
+/**
+ * The CLI will automatically emit tuples for each new/modified/deleted file
+ * when building an overlay database.
+ */
+overlayChangedFiles(
+  string path: string ref
+);
+
+/*- PHP dbscheme -*/
+
+// AST node info
+php_ast_node_location(
+  unique int node: @php_ast_node ref,
+  int location: @location_default ref
+);
+
+#keyset[node]
+php_ast_node_parent(
+  int node: @php_ast_node ref,
+  int parent: @php_ast_node ref,
+  int parent_index: int ref
+);
+
+// Token info
+php_tokeninfo(
+  unique int node: @php_token ref,
+  int kind: int ref,
+  string value: string ref
+);
+
+/*- Union types (supertypes from tree-sitter) -*/
+
+@php_underscore_expression = @php_assignment_expression | @php_augmented_assignment_expression
+  | @php_binary_expression | @php_cast_expression | @php_clone_expression
+  | @php_conditional_expression | @php_include_expression | @php_instanceof_expression
+  | @php_match_expression | @php_reference_assignment_expression | @php_silence_expression
+  | @php_ternary_expression | @php_unary_op_expression | @php_update_expression
+  | @php_yield_expression | @php_underscore_primary_expression
+
+@php_underscore_primary_expression = @php_anonymous_function_creation_expression
+  | @php_array_creation_expression | @php_arrow_function | @php_class_constant_access_expression
+  | @php_dynamic_variable_name | @php_encapsed_string | @php_function_call_expression
+  | @php_heredoc | @php_member_access_expression | @php_member_call_expression
+  | @php_name | @php_nowdoc | @php_nullsafe_member_access_expression
+  | @php_nullsafe_member_call_expression | @php_object_creation_expression
+  | @php_parenthesized_expression | @php_print_intrinsic | @php_qualified_name
+  | @php_scoped_call_expression | @php_scoped_property_access_expression
+  | @php_shell_command_expression | @php_subscript_expression | @php_throw_expression
+  | @php_variable_name | @php_underscore_literal
+
+@php_underscore_literal = @php_token_boolean | @php_token_float | @php_token_integer
+  | @php_token_null | @php_token_string
+
+@php_underscore_statement = @php_break_statement | @php_class_declaration
+  | @php_compound_statement | @php_continue_statement | @php_declare_statement
+  | @php_do_statement | @php_echo_statement | @php_empty_statement
+  | @php_enum_declaration | @php_expression_statement | @php_for_statement
+  | @php_foreach_statement | @php_function_definition | @php_global_declaration
+  | @php_goto_statement | @php_if_statement | @php_interface_declaration
+  | @php_named_label_statement | @php_namespace_definition | @php_namespace_use_declaration
+  | @php_return_statement | @php_static_variable_declaration | @php_switch_statement
+  | @php_throw_statement | @php_trait_declaration | @php_try_statement
+  | @php_unset_statement | @php_while_statement
+
+@php_underscore_type = @php_disjunctive_normal_form_type | @php_intersection_type
+  | @php_named_type | @php_optional_type | @php_primitive_type | @php_union_type
+
+@php_underscore_member_declaration = @php_const_declaration | @php_enum_case
+  | @php_method_declaration | @php_property_declaration | @php_use_declaration
+
+@php_underscore_class_type_designator = @php_name | @php_qualified_name
+  | @php_subscript_expression | @php_variable_name | @php_member_access_expression
+  | @php_nullsafe_member_access_expression | @php_scoped_property_access_expression
+
+/*- Token types -*/
+
+@php_token = @php_token_boolean | @php_token_float | @php_token_integer | @php_token_null
+  | @php_token_string | @php_token_name | @php_token_variable_name | @php_token_comment
+  | @php_token_php_tag | @php_token_visibility_modifier | @php_token_heredoc_body
+  | @php_token_nowdoc_body | @php_token_shell_command
+
+@php_reserved_word = @php_token_boolean | @php_token_null
+
+/*- AST node type hierarchy -*/
+
+@php_ast_node = @php_token | @php_program | @php_underscore_statement
+  | @php_underscore_expression | @php_underscore_member_declaration
+  | @php_argument | @php_attribute | @php_attribute_group | @php_attribute_list
+  | @php_base_clause | @php_catch_clause | @php_class_interface_clause
+  | @php_const_element | @php_declaration_list | @php_default_value
+  | @php_else_clause | @php_else_if_clause | @php_enum_declaration_list
+  | @php_finally_clause | @php_for_body | @php_foreach_body
+  | @php_formal_parameters | @php_match_condition_list | @php_match_default
+  | @php_named_type | @php_namespace_name | @php_namespace_name_as_prefix
+  | @php_property_element | @php_simple_parameter | @php_switch_block
+  | @php_switch_body | @php_switch_case | @php_switch_default
+  | @php_use_as_clause | @php_use_instead_of_clause | @php_use_list
+  | @php_variadic_parameter | @php_variadic_unpacking | @php_match_conditional_expression
+  | @php_intersection_type | @php_union_type | @php_disjunctive_normal_form_type
+  | @php_optional_type | @php_primitive_type | @php_cast_type | @php_relative_scope
+  | @php_text | @php_text_interpolation | @php_sequence_expression
+
+/*- Program -*/
+
+php_program_def(
+  unique int id: @php_program
+);
+
+#keyset[php_program, index]
+php_program_child(
+  int php_program: @php_program ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+/*- Statements -*/
+
+php_compound_statement_def(
+  unique int id: @php_compound_statement
+);
+
+#keyset[php_compound_statement, index]
+php_compound_statement_child(
+  int php_compound_statement: @php_compound_statement ref,
+  int index: int ref,
+  unique int child: @php_underscore_statement ref
+);
+
+php_expression_statement_def(
+  unique int id: @php_expression_statement,
+  int expression: @php_underscore_expression ref
+);
+
+php_echo_statement_def(
+  unique int id: @php_echo_statement
+);
+
+#keyset[php_echo_statement, index]
+php_echo_statement_child(
+  int php_echo_statement: @php_echo_statement ref,
+  int index: int ref,
+  unique int child: @php_underscore_expression ref
+);
+
+php_return_statement_def(
+  unique int id: @php_return_statement
+);
+
+php_return_statement_expression(
+  unique int php_return_statement: @php_return_statement ref,
+  int expression: @php_underscore_expression ref
+);
+
+php_if_statement_def(
+  unique int id: @php_if_statement,
+  int condition: @php_parenthesized_expression ref,
+  int body: @php_ast_node ref
+);
+
+#keyset[php_if_statement, index]
+php_if_statement_alternative(
+  int php_if_statement: @php_if_statement ref,
+  int index: int ref,
+  unique int alternative: @php_ast_node ref
+);
+
+php_else_if_clause_def(
+  unique int id: @php_else_if_clause,
+  int condition: @php_parenthesized_expression ref,
+  int body: @php_ast_node ref
+);
+
+php_else_clause_def(
+  unique int id: @php_else_clause,
+  int body: @php_ast_node ref
+);
+
+php_while_statement_def(
+  unique int id: @php_while_statement,
+  int condition: @php_parenthesized_expression ref,
+  int body: @php_ast_node ref
+);
+
+php_do_statement_def(
+  unique int id: @php_do_statement,
+  int body: @php_ast_node ref,
+  int condition: @php_parenthesized_expression ref
+);
+
+php_for_statement_def(
+  unique int id: @php_for_statement
+);
+
+php_for_statement_initializer(
+  int php_for_statement: @php_for_statement ref,
+  int index: int ref,
+  unique int initializer: @php_underscore_expression ref
+);
+
+php_for_statement_condition(
+  int php_for_statement: @php_for_statement ref,
+  int index: int ref,
+  unique int condition: @php_underscore_expression ref
+);
+
+php_for_statement_update(
+  int php_for_statement: @php_for_statement ref,
+  int index: int ref,
+  unique int update: @php_underscore_expression ref
+);
+
+php_for_body_def(
+  unique int id: @php_for_body
+);
+
+#keyset[php_for_body, index]
+php_for_body_child(
+  int php_for_body: @php_for_body ref,
+  int index: int ref,
+  unique int child: @php_underscore_statement ref
+);
+
+php_foreach_statement_def(
+  unique int id: @php_foreach_statement,
+  int traversable: @php_underscore_expression ref,
+  int body: @php_ast_node ref
+);
+
+php_foreach_statement_value(
+  unique int php_foreach_statement: @php_foreach_statement ref,
+  int value: @php_ast_node ref
+);
+
+php_foreach_statement_key(
+  unique int php_foreach_statement: @php_foreach_statement ref,
+  int key: @php_ast_node ref
+);
+
+php_foreach_body_def(
+  unique int id: @php_foreach_body
+);
+
+#keyset[php_foreach_body, index]
+php_foreach_body_child(
+  int php_foreach_body: @php_foreach_body ref,
+  int index: int ref,
+  unique int child: @php_underscore_statement ref
+);
+
+php_switch_statement_def(
+  unique int id: @php_switch_statement,
+  int value: @php_parenthesized_expression ref,
+  int body: @php_ast_node ref
+);
+
+php_switch_block_def(
+  unique int id: @php_switch_block
+);
+
+#keyset[php_switch_block, index]
+php_switch_block_child(
+  int php_switch_block: @php_switch_block ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_switch_body_def(
+  unique int id: @php_switch_body
+);
+
+#keyset[php_switch_body, index]
+php_switch_body_child(
+  int php_switch_body: @php_switch_body ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_switch_case_def(
+  unique int id: @php_switch_case,
+  int value: @php_underscore_expression ref
+);
+
+#keyset[php_switch_case, index]
+php_switch_case_body(
+  int php_switch_case: @php_switch_case ref,
+  int index: int ref,
+  unique int body: @php_underscore_statement ref
+);
+
+php_switch_default_def(
+  unique int id: @php_switch_default
+);
+
+#keyset[php_switch_default, index]
+php_switch_default_body(
+  int php_switch_default: @php_switch_default ref,
+  int index: int ref,
+  unique int body: @php_underscore_statement ref
+);
+
+php_try_statement_def(
+  unique int id: @php_try_statement,
+  int body: @php_compound_statement ref
+);
+
+#keyset[php_try_statement, index]
+php_try_statement_catch(
+  int php_try_statement: @php_try_statement ref,
+  int index: int ref,
+  unique int catch_clause: @php_catch_clause ref
+);
+
+php_try_statement_finally(
+  unique int php_try_statement: @php_try_statement ref,
+  int finally_clause: @php_finally_clause ref
+);
+
+php_catch_clause_def(
+  unique int id: @php_catch_clause,
+  int body: @php_compound_statement ref
+);
+
+#keyset[php_catch_clause, index]
+php_catch_clause_type(
+  int php_catch_clause: @php_catch_clause ref,
+  int index: int ref,
+  unique int type: @php_named_type ref
+);
+
+php_catch_clause_variable(
+  unique int php_catch_clause: @php_catch_clause ref,
+  int variable: @php_variable_name ref
+);
+
+php_finally_clause_def(
+  unique int id: @php_finally_clause,
+  int body: @php_compound_statement ref
+);
+
+php_throw_statement_def(
+  unique int id: @php_throw_statement,
+  int expression: @php_underscore_expression ref
+);
+
+php_break_statement_def(
+  unique int id: @php_break_statement
+);
+
+php_break_statement_depth(
+  unique int php_break_statement: @php_break_statement ref,
+  int depth: @php_token_integer ref
+);
+
+php_continue_statement_def(
+  unique int id: @php_continue_statement
+);
+
+php_continue_statement_depth(
+  unique int php_continue_statement: @php_continue_statement ref,
+  int depth: @php_token_integer ref
+);
+
+php_declare_statement_def(
+  unique int id: @php_declare_statement
+);
+
+php_empty_statement_def(
+  unique int id: @php_empty_statement
+);
+
+php_global_declaration_def(
+  unique int id: @php_global_declaration
+);
+
+#keyset[php_global_declaration, index]
+php_global_declaration_child(
+  int php_global_declaration: @php_global_declaration ref,
+  int index: int ref,
+  unique int child: @php_variable_name ref
+);
+
+php_goto_statement_def(
+  unique int id: @php_goto_statement,
+  int label: @php_name ref
+);
+
+php_named_label_statement_def(
+  unique int id: @php_named_label_statement,
+  int label: @php_name ref
+);
+
+php_unset_statement_def(
+  unique int id: @php_unset_statement
+);
+
+#keyset[php_unset_statement, index]
+php_unset_statement_child(
+  int php_unset_statement: @php_unset_statement ref,
+  int index: int ref,
+  unique int child: @php_underscore_expression ref
+);
+
+php_static_variable_declaration_def(
+  unique int id: @php_static_variable_declaration
+);
+
+#keyset[php_static_variable_declaration, index]
+php_static_variable_declaration_child(
+  int php_static_variable_declaration: @php_static_variable_declaration ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+/*- Expressions -*/
+
+php_assignment_expression_def(
+  unique int id: @php_assignment_expression,
+  int left: @php_ast_node ref,
+  int right: @php_underscore_expression ref
+);
+
+php_augmented_assignment_expression_def(
+  unique int id: @php_augmented_assignment_expression,
+  int left: @php_ast_node ref,
+  int operator: string ref,
+  int right: @php_underscore_expression ref
+);
+
+php_reference_assignment_expression_def(
+  unique int id: @php_reference_assignment_expression,
+  int left: @php_ast_node ref,
+  int right: @php_underscore_expression ref
+);
+
+php_conditional_expression_def(
+  unique int id: @php_conditional_expression,
+  int condition: @php_underscore_expression ref,
+  int alternative: @php_underscore_expression ref
+);
+
+php_conditional_expression_consequence(
+  unique int php_conditional_expression: @php_conditional_expression ref,
+  int consequence: @php_underscore_expression ref
+);
+
+php_ternary_expression_def(
+  unique int id: @php_ternary_expression,
+  int condition: @php_underscore_expression ref,
+  int consequence: @php_underscore_expression ref,
+  int alternative: @php_underscore_expression ref
+);
+
+php_binary_expression_def(
+  unique int id: @php_binary_expression,
+  int left: @php_underscore_expression ref,
+  int operator: string ref,
+  int right: @php_underscore_expression ref
+);
+
+php_unary_op_expression_def(
+  unique int id: @php_unary_op_expression,
+  int operator: string ref,
+  int operand: @php_underscore_expression ref
+);
+
+php_update_expression_def(
+  unique int id: @php_update_expression,
+  int operator: string ref,
+  int argument: @php_ast_node ref,
+  boolean prefix: boolean ref
+);
+
+php_cast_expression_def(
+  unique int id: @php_cast_expression,
+  int type: @php_cast_type ref,
+  int value: @php_underscore_expression ref
+);
+
+php_cast_type_def(
+  unique int id: @php_cast_type,
+  string kind: string ref
+);
+
+php_instanceof_expression_def(
+  unique int id: @php_instanceof_expression,
+  int object: @php_underscore_expression ref,
+  int type: @php_ast_node ref
+);
+
+php_clone_expression_def(
+  unique int id: @php_clone_expression,
+  int object: @php_underscore_expression ref
+);
+
+php_include_expression_def(
+  unique int id: @php_include_expression,
+  string kind: string ref,
+  int path: @php_underscore_expression ref
+);
+
+php_yield_expression_def(
+  unique int id: @php_yield_expression
+);
+
+php_yield_expression_value(
+  unique int php_yield_expression: @php_yield_expression ref,
+  int value: @php_underscore_expression ref
+);
+
+php_yield_expression_key(
+  unique int php_yield_expression: @php_yield_expression ref,
+  int key: @php_underscore_expression ref
+);
+
+php_silence_expression_def(
+  unique int id: @php_silence_expression,
+  int operand: @php_underscore_expression ref
+);
+
+php_throw_expression_def(
+  unique int id: @php_throw_expression,
+  int value: @php_underscore_expression ref
+);
+
+php_match_expression_def(
+  unique int id: @php_match_expression,
+  int subject: @php_parenthesized_expression ref
+);
+
+#keyset[php_match_expression, index]
+php_match_expression_arm(
+  int php_match_expression: @php_match_expression ref,
+  int index: int ref,
+  unique int arm: @php_ast_node ref
+);
+
+php_match_conditional_expression_def(
+  unique int id: @php_match_conditional_expression,
+  int return_expression: @php_underscore_expression ref
+);
+
+#keyset[php_match_conditional_expression, index]
+php_match_conditional_expression_condition(
+  int php_match_conditional_expression: @php_match_conditional_expression ref,
+  int index: int ref,
+  unique int condition: @php_underscore_expression ref
+);
+
+php_match_condition_list_def(
+  unique int id: @php_match_condition_list
+);
+
+#keyset[php_match_condition_list, index]
+php_match_condition_list_child(
+  int php_match_condition_list: @php_match_condition_list ref,
+  int index: int ref,
+  unique int child: @php_underscore_expression ref
+);
+
+php_match_default_def(
+  unique int id: @php_match_default,
+  int return_expression: @php_underscore_expression ref
+);
+
+php_parenthesized_expression_def(
+  unique int id: @php_parenthesized_expression,
+  int expression: @php_underscore_expression ref
+);
+
+php_sequence_expression_def(
+  unique int id: @php_sequence_expression
+);
+
+#keyset[php_sequence_expression, index]
+php_sequence_expression_child(
+  int php_sequence_expression: @php_sequence_expression ref,
+  int index: int ref,
+  unique int child: @php_underscore_expression ref
+);
+
+/*- Function calls -*/
+
+php_function_call_expression_def(
+  unique int id: @php_function_call_expression,
+  int function: @php_ast_node ref,
+  int arguments: @php_argument ref
+);
+
+#keyset[php_function_call_expression, index]
+php_function_call_expression_argument(
+  int php_function_call_expression: @php_function_call_expression ref,
+  int index: int ref,
+  unique int argument: @php_argument ref
+);
+
+php_member_call_expression_def(
+  unique int id: @php_member_call_expression,
+  int object: @php_ast_node ref,
+  int name: @php_ast_node ref,
+  int arguments: @php_argument ref
+);
+
+#keyset[php_member_call_expression, index]
+php_member_call_expression_argument(
+  int php_member_call_expression: @php_member_call_expression ref,
+  int index: int ref,
+  unique int argument: @php_argument ref
+);
+
+php_nullsafe_member_call_expression_def(
+  unique int id: @php_nullsafe_member_call_expression,
+  int object: @php_ast_node ref,
+  int name: @php_ast_node ref
+);
+
+#keyset[php_nullsafe_member_call_expression, index]
+php_nullsafe_member_call_expression_argument(
+  int php_nullsafe_member_call_expression: @php_nullsafe_member_call_expression ref,
+  int index: int ref,
+  unique int argument: @php_argument ref
+);
+
+php_scoped_call_expression_def(
+  unique int id: @php_scoped_call_expression,
+  int scope: @php_ast_node ref,
+  int name: @php_ast_node ref
+);
+
+#keyset[php_scoped_call_expression, index]
+php_scoped_call_expression_argument(
+  int php_scoped_call_expression: @php_scoped_call_expression ref,
+  int index: int ref,
+  unique int argument: @php_argument ref
+);
+
+php_argument_def(
+  unique int id: @php_argument,
+  int value: @php_underscore_expression ref
+);
+
+php_argument_name(
+  unique int php_argument: @php_argument ref,
+  int name: @php_name ref
+);
+
+php_argument_spread(
+  unique int php_argument: @php_argument ref,
+  boolean is_spread: boolean ref
+);
+
+/*- Member access -*/
+
+php_member_access_expression_def(
+  unique int id: @php_member_access_expression,
+  int object: @php_ast_node ref,
+  int name: @php_ast_node ref
+);
+
+php_nullsafe_member_access_expression_def(
+  unique int id: @php_nullsafe_member_access_expression,
+  int object: @php_ast_node ref,
+  int name: @php_ast_node ref
+);
+
+php_scoped_property_access_expression_def(
+  unique int id: @php_scoped_property_access_expression,
+  int scope: @php_ast_node ref,
+  int name: @php_ast_node ref
+);
+
+php_class_constant_access_expression_def(
+  unique int id: @php_class_constant_access_expression,
+  int scope: @php_ast_node ref,
+  int name: @php_name ref
+);
+
+php_subscript_expression_def(
+  unique int id: @php_subscript_expression,
+  int object: @php_ast_node ref
+);
+
+php_subscript_expression_index(
+  unique int php_subscript_expression: @php_subscript_expression ref,
+  int index: @php_underscore_expression ref
+);
+
+/*- Array -*/
+
+php_array_creation_expression_def(
+  unique int id: @php_array_creation_expression
+);
+
+#keyset[php_array_creation_expression, index]
+php_array_creation_expression_child(
+  int php_array_creation_expression: @php_array_creation_expression ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+/*- String/Heredoc -*/
+
+php_encapsed_string_def(
+  unique int id: @php_encapsed_string
+);
+
+#keyset[php_encapsed_string, index]
+php_encapsed_string_child(
+  int php_encapsed_string: @php_encapsed_string ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_heredoc_def(
+  unique int id: @php_heredoc
+);
+
+#keyset[php_heredoc, index]
+php_heredoc_child(
+  int php_heredoc: @php_heredoc ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_nowdoc_def(
+  unique int id: @php_nowdoc
+);
+
+php_shell_command_expression_def(
+  unique int id: @php_shell_command_expression
+);
+
+#keyset[php_shell_command_expression, index]
+php_shell_command_expression_child(
+  int php_shell_command_expression: @php_shell_command_expression ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_print_intrinsic_def(
+  unique int id: @php_print_intrinsic,
+  int expression: @php_underscore_expression ref
+);
+
+/*- Declarations -*/
+
+php_function_definition_def(
+  unique int id: @php_function_definition,
+  int name: @php_name ref,
+  int parameters: @php_formal_parameters ref,
+  int body: @php_compound_statement ref
+);
+
+php_function_definition_return_type(
+  unique int php_function_definition: @php_function_definition ref,
+  int return_type: @php_underscore_type ref
+);
+
+php_function_definition_is_reference(
+  unique int php_function_definition: @php_function_definition ref
+);
+
+#keyset[php_function_definition, index]
+php_function_definition_attribute(
+  int php_function_definition: @php_function_definition ref,
+  int index: int ref,
+  unique int attribute: @php_attribute_list ref
+);
+
+php_class_declaration_def(
+  unique int id: @php_class_declaration,
+  int name: @php_name ref,
+  int body: @php_declaration_list ref
+);
+
+php_class_declaration_modifier(
+  unique int php_class_declaration: @php_class_declaration ref,
+  string modifier: string ref
+);
+
+php_class_declaration_base_clause(
+  unique int php_class_declaration: @php_class_declaration ref,
+  int base_clause: @php_base_clause ref
+);
+
+php_class_declaration_interfaces(
+  unique int php_class_declaration: @php_class_declaration ref,
+  int class_interface_clause: @php_class_interface_clause ref
+);
+
+#keyset[php_class_declaration, index]
+php_class_declaration_attribute(
+  int php_class_declaration: @php_class_declaration ref,
+  int index: int ref,
+  unique int attribute: @php_attribute_list ref
+);
+
+php_interface_declaration_def(
+  unique int id: @php_interface_declaration,
+  int name: @php_name ref,
+  int body: @php_declaration_list ref
+);
+
+php_interface_declaration_base_clause(
+  unique int php_interface_declaration: @php_interface_declaration ref,
+  int base_clause: @php_base_clause ref
+);
+
+php_trait_declaration_def(
+  unique int id: @php_trait_declaration,
+  int name: @php_name ref,
+  int body: @php_declaration_list ref
+);
+
+php_enum_declaration_def(
+  unique int id: @php_enum_declaration,
+  int name: @php_name ref,
+  int body: @php_enum_declaration_list ref
+);
+
+php_enum_declaration_backing_type(
+  unique int php_enum_declaration: @php_enum_declaration ref,
+  int type: @php_underscore_type ref
+);
+
+php_enum_declaration_interfaces(
+  unique int php_enum_declaration: @php_enum_declaration ref,
+  int class_interface_clause: @php_class_interface_clause ref
+);
+
+php_enum_declaration_list_def(
+  unique int id: @php_enum_declaration_list
+);
+
+#keyset[php_enum_declaration_list, index]
+php_enum_declaration_list_child(
+  int php_enum_declaration_list: @php_enum_declaration_list ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_enum_case_def(
+  unique int id: @php_enum_case,
+  int name: @php_name ref
+);
+
+php_enum_case_value(
+  unique int php_enum_case: @php_enum_case ref,
+  int value: @php_underscore_expression ref
+);
+
+php_base_clause_def(
+  unique int id: @php_base_clause,
+  int name: @php_ast_node ref
+);
+
+php_class_interface_clause_def(
+  unique int id: @php_class_interface_clause
+);
+
+#keyset[php_class_interface_clause, index]
+php_class_interface_clause_child(
+  int php_class_interface_clause: @php_class_interface_clause ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_declaration_list_def(
+  unique int id: @php_declaration_list
+);
+
+#keyset[php_declaration_list, index]
+php_declaration_list_child(
+  int php_declaration_list: @php_declaration_list ref,
+  int index: int ref,
+  unique int child: @php_underscore_member_declaration ref
+);
+
+php_method_declaration_def(
+  unique int id: @php_method_declaration,
+  int name: @php_name ref,
+  int parameters: @php_formal_parameters ref,
+  int body: @php_ast_node ref
+);
+
+php_method_declaration_return_type(
+  unique int php_method_declaration: @php_method_declaration ref,
+  int return_type: @php_underscore_type ref
+);
+
+php_method_declaration_modifier(
+  int php_method_declaration: @php_method_declaration ref,
+  string modifier: string ref
+);
+
+#keyset[php_method_declaration, index]
+php_method_declaration_attribute(
+  int php_method_declaration: @php_method_declaration ref,
+  int index: int ref,
+  unique int attribute: @php_attribute_list ref
+);
+
+php_property_declaration_def(
+  unique int id: @php_property_declaration
+);
+
+#keyset[php_property_declaration, index]
+php_property_declaration_child(
+  int php_property_declaration: @php_property_declaration ref,
+  int index: int ref,
+  unique int child: @php_property_element ref
+);
+
+php_property_declaration_modifier(
+  int php_property_declaration: @php_property_declaration ref,
+  string modifier: string ref
+);
+
+php_property_declaration_type(
+  unique int php_property_declaration: @php_property_declaration ref,
+  int type: @php_underscore_type ref
+);
+
+php_property_element_def(
+  unique int id: @php_property_element,
+  int name: @php_variable_name ref
+);
+
+php_property_element_default(
+  unique int php_property_element: @php_property_element ref,
+  int default_value: @php_underscore_expression ref
+);
+
+php_const_declaration_def(
+  unique int id: @php_const_declaration
+);
+
+#keyset[php_const_declaration, index]
+php_const_declaration_child(
+  int php_const_declaration: @php_const_declaration ref,
+  int index: int ref,
+  unique int child: @php_const_element ref
+);
+
+php_const_declaration_modifier(
+  int php_const_declaration: @php_const_declaration ref,
+  string modifier: string ref
+);
+
+php_const_element_def(
+  unique int id: @php_const_element,
+  int name: @php_name ref,
+  int value: @php_underscore_expression ref
+);
+
+php_use_declaration_def(
+  unique int id: @php_use_declaration
+);
+
+#keyset[php_use_declaration, index]
+php_use_declaration_child(
+  int php_use_declaration: @php_use_declaration ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_use_as_clause_def(
+  unique int id: @php_use_as_clause,
+  int name: @php_ast_node ref
+);
+
+php_use_as_clause_alias(
+  unique int php_use_as_clause: @php_use_as_clause ref,
+  int alias: @php_name ref
+);
+
+php_use_as_clause_modifier(
+  unique int php_use_as_clause: @php_use_as_clause ref,
+  string modifier: string ref
+);
+
+php_use_instead_of_clause_def(
+  unique int id: @php_use_instead_of_clause,
+  int name: @php_ast_node ref,
+  int instead_of: @php_name ref
+);
+
+php_use_list_def(
+  unique int id: @php_use_list
+);
+
+#keyset[php_use_list, index]
+php_use_list_child(
+  int php_use_list: @php_use_list ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+/*- Parameters -*/
+
+php_formal_parameters_def(
+  unique int id: @php_formal_parameters
+);
+
+#keyset[php_formal_parameters, index]
+php_formal_parameters_child(
+  int php_formal_parameters: @php_formal_parameters ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_simple_parameter_def(
+  unique int id: @php_simple_parameter,
+  int name: @php_variable_name ref
+);
+
+php_simple_parameter_type(
+  unique int php_simple_parameter: @php_simple_parameter ref,
+  int type: @php_underscore_type ref
+);
+
+php_simple_parameter_default(
+  unique int php_simple_parameter: @php_simple_parameter ref,
+  int default_value: @php_underscore_expression ref
+);
+
+php_simple_parameter_is_reference(
+  unique int php_simple_parameter: @php_simple_parameter ref
+);
+
+php_simple_parameter_modifier(
+  unique int php_simple_parameter: @php_simple_parameter ref,
+  string modifier: string ref
+);
+
+#keyset[php_simple_parameter, index]
+php_simple_parameter_attribute(
+  int php_simple_parameter: @php_simple_parameter ref,
+  int index: int ref,
+  unique int attribute: @php_attribute_list ref
+);
+
+php_variadic_parameter_def(
+  unique int id: @php_variadic_parameter,
+  int name: @php_variable_name ref
+);
+
+php_variadic_parameter_type(
+  unique int php_variadic_parameter: @php_variadic_parameter ref,
+  int type: @php_underscore_type ref
+);
+
+php_variadic_parameter_default(
+  unique int php_variadic_parameter: @php_variadic_parameter ref,
+  int default_value: @php_underscore_expression ref
+);
+
+php_variadic_unpacking_def(
+  unique int id: @php_variadic_unpacking,
+  int value: @php_underscore_expression ref
+);
+
+php_default_value_def(
+  unique int id: @php_default_value,
+  int value: @php_underscore_expression ref
+);
+
+/*- Anonymous functions -*/
+
+php_anonymous_function_creation_expression_def(
+  unique int id: @php_anonymous_function_creation_expression,
+  int parameters: @php_formal_parameters ref,
+  int body: @php_compound_statement ref
+);
+
+php_anonymous_function_creation_expression_return_type(
+  unique int php_anonymous_function_creation_expression: @php_anonymous_function_creation_expression ref,
+  int return_type: @php_underscore_type ref
+);
+
+php_anonymous_function_creation_expression_is_static(
+  unique int php_anonymous_function_creation_expression: @php_anonymous_function_creation_expression ref
+);
+
+#keyset[php_anonymous_function_creation_expression, index]
+php_anonymous_function_creation_expression_use(
+  int php_anonymous_function_creation_expression: @php_anonymous_function_creation_expression ref,
+  int index: int ref,
+  unique int use_variable: @php_variable_name ref
+);
+
+php_arrow_function_def(
+  unique int id: @php_arrow_function,
+  int parameters: @php_formal_parameters ref,
+  int body: @php_underscore_expression ref
+);
+
+php_arrow_function_return_type(
+  unique int php_arrow_function: @php_arrow_function ref,
+  int return_type: @php_underscore_type ref
+);
+
+php_arrow_function_is_static(
+  unique int php_arrow_function: @php_arrow_function ref
+);
+
+/*- Object creation -*/
+
+php_object_creation_expression_def(
+  unique int id: @php_object_creation_expression,
+  int class: @php_underscore_class_type_designator ref
+);
+
+#keyset[php_object_creation_expression, index]
+php_object_creation_expression_argument(
+  int php_object_creation_expression: @php_object_creation_expression ref,
+  int index: int ref,
+  unique int argument: @php_argument ref
+);
+
+/*- Namespace -*/
+
+php_namespace_definition_def(
+  unique int id: @php_namespace_definition
+);
+
+php_namespace_definition_name(
+  unique int php_namespace_definition: @php_namespace_definition ref,
+  int name: @php_namespace_name ref
+);
+
+php_namespace_definition_body(
+  unique int php_namespace_definition: @php_namespace_definition ref,
+  int body: @php_compound_statement ref
+);
+
+php_namespace_use_declaration_def(
+  unique int id: @php_namespace_use_declaration
+);
+
+#keyset[php_namespace_use_declaration, index]
+php_namespace_use_declaration_child(
+  int php_namespace_use_declaration: @php_namespace_use_declaration ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_namespace_name_def(
+  unique int id: @php_namespace_name,
+  string name: string ref
+);
+
+php_namespace_name_as_prefix_def(
+  unique int id: @php_namespace_name_as_prefix,
+  int name: @php_namespace_name ref
+);
+
+/*- Types -*/
+
+php_named_type_def(
+  unique int id: @php_named_type,
+  int name: @php_ast_node ref
+);
+
+php_primitive_type_def(
+  unique int id: @php_primitive_type,
+  string kind: string ref
+);
+
+php_optional_type_def(
+  unique int id: @php_optional_type,
+  int type: @php_ast_node ref
+);
+
+php_union_type_def(
+  unique int id: @php_union_type
+);
+
+#keyset[php_union_type, index]
+php_union_type_child(
+  int php_union_type: @php_union_type ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_intersection_type_def(
+  unique int id: @php_intersection_type
+);
+
+#keyset[php_intersection_type, index]
+php_intersection_type_child(
+  int php_intersection_type: @php_intersection_type ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_disjunctive_normal_form_type_def(
+  unique int id: @php_disjunctive_normal_form_type
+);
+
+#keyset[php_disjunctive_normal_form_type, index]
+php_disjunctive_normal_form_type_child(
+  int php_disjunctive_normal_form_type: @php_disjunctive_normal_form_type ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+php_relative_scope_def(
+  unique int id: @php_relative_scope,
+  string kind: string ref
+);
+
+/*- Names -*/
+
+php_name_def(
+  unique int id: @php_name,
+  string name: string ref
+);
+
+php_qualified_name_def(
+  unique int id: @php_qualified_name,
+  int name: @php_name ref
+);
+
+php_qualified_name_prefix(
+  unique int php_qualified_name: @php_qualified_name ref,
+  int prefix: @php_namespace_name_as_prefix ref
+);
+
+php_variable_name_def(
+  unique int id: @php_variable_name,
+  string name: string ref
+);
+
+php_dynamic_variable_name_def(
+  unique int id: @php_dynamic_variable_name,
+  int expression: @php_underscore_expression ref
+);
+
+/*- Attributes -*/
+
+php_attribute_list_def(
+  unique int id: @php_attribute_list
+);
+
+#keyset[php_attribute_list, index]
+php_attribute_list_child(
+  int php_attribute_list: @php_attribute_list ref,
+  int index: int ref,
+  unique int child: @php_attribute_group ref
+);
+
+php_attribute_group_def(
+  unique int id: @php_attribute_group
+);
+
+#keyset[php_attribute_group, index]
+php_attribute_group_child(
+  int php_attribute_group: @php_attribute_group ref,
+  int index: int ref,
+  unique int child: @php_attribute ref
+);
+
+php_attribute_def(
+  unique int id: @php_attribute,
+  int name: @php_ast_node ref
+);
+
+#keyset[php_attribute, index]
+php_attribute_argument(
+  int php_attribute: @php_attribute ref,
+  int index: int ref,
+  unique int argument: @php_argument ref
+);
+
+/*- Text/Interpolation -*/
+
+php_text_def(
+  unique int id: @php_text,
+  string value: string ref
+);
+
+php_text_interpolation_def(
+  unique int id: @php_text_interpolation
+);
+
+#keyset[php_text_interpolation, index]
+php_text_interpolation_child(
+  int php_text_interpolation: @php_text_interpolation ref,
+  int index: int ref,
+  unique int child: @php_ast_node ref
+);
+
+/*- Token definitions -*/
+
+@php_token_boolean = @php_token_true | @php_token_false
+
+php_token_true_def(unique int id: @php_token_true);
+php_token_false_def(unique int id: @php_token_false);
+php_token_null_def(unique int id: @php_token_null);
+
+php_token_integer_def(
+  unique int id: @php_token_integer,
+  string value: string ref
+);
+
+php_token_float_def(
+  unique int id: @php_token_float,
+  string value: string ref
+);
+
+php_token_string_def(
+  unique int id: @php_token_string,
+  string value: string ref
+);
+
+php_token_name_def(
+  unique int id: @php_token_name,
+  string value: string ref
+);
+
+php_token_variable_name_def(
+  unique int id: @php_token_variable_name,
+  string value: string ref
+);
+
+php_token_comment_def(
+  unique int id: @php_token_comment,
+  string value: string ref
+);
+
+php_token_php_tag_def(
+  unique int id: @php_token_php_tag,
+  string value: string ref
+);
+
+php_token_visibility_modifier_def(
+  unique int id: @php_token_visibility_modifier,
+  string value: string ref
+);
+
+php_token_heredoc_body_def(
+  unique int id: @php_token_heredoc_body,
+  string value: string ref
+);
+
+php_token_nowdoc_body_def(
+  unique int id: @php_token_nowdoc_body,
+  string value: string ref
+);
+
+php_token_shell_command_def(
+  unique int id: @php_token_shell_command,
+  string value: string ref
+);
