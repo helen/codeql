@@ -1,14 +1,19 @@
 /**
- * Provides classes for working with the control flow graph.
- */
-
-private import codeql.php.AST
-
-/**
- * A control flow node.
+ * Provides the PHP control flow graph (CFG).
  *
- * A control flow node represents a single point in the control flow of a program.
+ * The CFG is built from the AST using the shared controlflow library.
+ * Each function, method, anonymous function, arrow function, and program
+ * gets its own control flow graph.
+ *
+ * Import this module to access CFG nodes and edges:
+ * ```ql
+ * import codeql.php.CFG
+ * ```
  */
-class CfgNode extends AstNode {
-  CfgNode() { any() }
-}
+
+import codeql.php.ast.internal.TreeSitter
+private import codeql.php.controlflow.internal.CfgImpl as Impl
+
+/** A control flow scope: a callable or program with its own CFG. */
+class CfgScope = Impl::CfgScope::CfgScope;
+
