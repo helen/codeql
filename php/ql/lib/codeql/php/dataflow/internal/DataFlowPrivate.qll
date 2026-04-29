@@ -168,6 +168,77 @@ class ArgumentPosition extends int {
 
 predicate parameterMatch(ParameterPosition ppos, ArgumentPosition apos) { ppos = apos }
 
+// --- Variable flow helpers ---
+
+/**
+ * Holds if `vn` is a VariableName that binds (writes) a variable, rather than reading it.
+ * Covers: assignments, augmented assignments, reference assignments, parameters,
+ * catch variables, static variable declarations, update expressions, property declarations,
+ * global declarations, list destructuring, and closure use clauses.
+ */
+private predicate isVariableBinding(Php::VariableName vn) {
+  exists(Php::AssignmentExpression a | a.getLeft() = vn) or
+  exists(Php::AugmentedAssignmentExpression a | a.getLeft() = vn) or
+  exists(Php::ReferenceAssignmentExpression a | a.getLeft() = vn) or
+  exists(Php::SimpleParameter p | p.getName() = vn) or
+  exists(Php::VariadicParameter p | p.getName() = vn) or
+  exists(Php::CatchClause c | c.getName() = vn) or
+  exists(Php::StaticVariableDeclaration s | s.getName() = vn) or
+  exists(Php::UpdateExpression u | u.getArgument() = vn) or
+  exists(Php::PropertyElement p | p.getName() = vn) or
+  vn.getParent() instanceof Php::GlobalDeclaration or
+  vn.getParent() instanceof Php::AnonymousFunctionUseClause or
+  vn.getParent() instanceof Php::ListLiteral
+}
+
+/**
+ * Holds if `vn` is a plain local variable read (not a binding/write occurrence).
+ */
+private predicate isVariableRead(Php::VariableName vn) {
+  not isVariableBinding(vn) and
+  // Exclude dynamic variable names ($$x) and property declarations
+  not vn.getParent() instanceof Php::DynamicVariableName
+}
+
+/**
+ * Holds if `write` is a write of variable named `name` in callable `c`, at line `line`.
+ */
+private predicate variableWrite(
+  Php::AstNode write, string name, DataFlowCallable c, int line
+) {
+  exists(Php::VariableName lhs |
+    (
+      exists(Php::AssignmentExpression a | a.getLeft() = lhs and write = a)
+      or
+      exists(Php::AugmentedAssignmentExpression a | a.getLeft() = lhs and write = a)
+      or
+      exists(Php::ReferenceAssignmentExpression a | a.getLeft() = lhs and write = a)
+    ) and
+    name = lhs.getChild().getValue() and
+    c = nodeGetEnclosingCallable(write) and
+    line = write.getLocation().getStartLine()
+  )
+  or
+  exists(Php::SimpleParameter p |
+    write = p and
+    name = p.getName().getChild().getValue() and
+    c = nodeGetEnclosingCallable(p) and
+    line = p.getLocation().getStartLine()
+  )
+}
+
+/**
+ * Holds if `read` is a read of variable named `name` in callable `c`, at line `line`.
+ */
+private predicate variableReadAt(
+  Php::VariableName read, string name, DataFlowCallable c, int line
+) {
+  isVariableRead(read) and
+  name = read.getChild().getValue() and
+  c = nodeGetEnclosingCallable(read) and
+  line = read.getLocation().getStartLine()
+}
+
 // --- Flow steps ---
 
 /**
@@ -180,6 +251,18 @@ predicate simpleLocalFlowStep(Node node1, Node node2, string model) {
   (
     // Assignment: RHS value flows to the assignment expression
     exists(Php::AssignmentExpression assign |
+      node1 = assign.getRight() and
+      node2 = assign
+    )
+    or
+    // Reference assignment: RHS value flows to the assignment expression
+    exists(Php::ReferenceAssignmentExpression assign |
+      node1 = assign.getRight() and
+      node2 = assign
+    )
+    or
+    // Augmented assignment: RHS value flows to the assignment expression
+    exists(Php::AugmentedAssignmentExpression assign |
       node1 = assign.getRight() and
       node2 = assign
     )
@@ -212,6 +295,14 @@ predicate simpleLocalFlowStep(Node node1, Node node2, string model) {
     exists(Php::ArrowFunction arrow |
       node1 = arrow.getBody() and
       node2 = arrow
+    )
+    or
+    // Variable flow: a write of $x flows to subsequent reads of $x in the same callable.
+    // Over-approximates without SSA/CFG (all writes to all later reads), but sound for security analysis.
+    exists(string name, DataFlowCallable c, int writeLine, int readLine |
+      variableWrite(node1, name, c, writeLine) and
+      variableReadAt(node2, name, c, readLine) and
+      writeLine <= readLine
     )
   )
 }
