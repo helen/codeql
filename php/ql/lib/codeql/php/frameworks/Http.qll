@@ -16,7 +16,7 @@ private class SuperglobalSource extends RemoteFlowSource::Range {
 
   SuperglobalSource() {
     this instanceof Php::VariableName and
-    name = this.(Php::VariableName).getNameString() and
+    name = this.(Php::VariableName).getChild().(Php::Name).getValue() and
     name = ["_GET", "_POST", "_REQUEST", "_COOKIE", "_SERVER", "_FILES"]
   }
 

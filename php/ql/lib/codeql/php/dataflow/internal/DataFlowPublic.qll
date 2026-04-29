@@ -15,7 +15,7 @@ class Node extends Php::AstNode {
 
 /** A data flow node corresponding to an expression. */
 class ExprNode extends Node {
-  ExprNode() { this instanceof @php_underscore_expression }
+  ExprNode() { this instanceof @php_expression }
 }
 
 /** A data flow node corresponding to a parameter. */

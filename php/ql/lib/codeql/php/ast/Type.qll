@@ -5,7 +5,7 @@
 private import codeql.php.ast.internal.TreeSitter
 
 /** A type annotation. */
-class TypeAnnotation extends Php::AstNode, @php_underscore_type {
+class TypeAnnotation extends Php::AstNode, @php_type__ {
   override string getAPrimaryQlClass() { result = "TypeAnnotation" }
 }
 

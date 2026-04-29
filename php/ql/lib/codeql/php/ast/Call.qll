@@ -15,21 +15,28 @@ class Call extends Expr {
   }
 
   /** Gets an argument of this call. */
-  Php::Argument getAnArgument() {
-    this instanceof Php::FunctionCallExpression and
-    result = this.(Php::FunctionCallExpression).getAnArgument()
-    or
-    this instanceof Php::MemberCallExpression and
-    result = this.(Php::MemberCallExpression).getAnArgument()
+  Php::AstNode getAnArgument() {
+    result = this.getArguments().(Php::Arguments).getChild(_)
   }
 
   /** Gets the `i`th argument of this call. */
-  Php::Argument getArgument(int i) {
+  Php::AstNode getArgument(int i) {
+    result = this.getArguments().(Php::Arguments).getChild(i)
+  }
+
+  /** Gets the arguments node. */
+  private Php::AstNode getArguments() {
     this instanceof Php::FunctionCallExpression and
-    result = this.(Php::FunctionCallExpression).getArgument(i)
+    result = this.(Php::FunctionCallExpression).getArguments()
     or
     this instanceof Php::MemberCallExpression and
-    result = this.(Php::MemberCallExpression).getArgument(i)
+    result = this.(Php::MemberCallExpression).getArguments()
+    or
+    this instanceof Php::NullsafeMemberCallExpression and
+    result = this.(Php::NullsafeMemberCallExpression).getArguments()
+    or
+    this instanceof Php::ScopedCallExpression and
+    result = this.(Php::ScopedCallExpression).getArguments()
   }
 }
 
@@ -37,7 +44,7 @@ class Call extends Expr {
 class FunctionCall extends Call, Php::FunctionCallExpression {
   /** Gets the name of the called function, if it is a simple name. */
   string getFunctionName() {
-    result = this.getFunction().(Php::Name).getNameString()
+    result = this.getFunction().(Php::Name).getValue()
     or
     result = this.getFunction().(Php::QualifiedName).getAPrimaryQlClass() // fallback
   }
@@ -55,7 +62,7 @@ class MethodCall extends Call, Php::MemberCallExpression {
   Php::AstNode getMethodName() { result = this.getName() }
 
   /** Gets the method name as a string, if it is a simple name. */
-  string getMethodNameString() { result = this.getName().(Php::Name).getNameString() }
+  string getMethodNameString() { result = this.getName().(Php::Name).getValue() }
 }
 
 /** A static method call (`ClassName::method()`). */
@@ -67,5 +74,5 @@ class StaticMethodCall extends Call, Php::ScopedCallExpression {
   Php::AstNode getMethodName() { result = this.getName() }
 
   /** Gets the method name as a string, if it is a simple name. */
-  string getMethodNameString() { result = this.getName().(Php::Name).getNameString() }
+  string getMethodNameString() { result = this.getName().(Php::Name).getValue() }
 }

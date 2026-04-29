@@ -5,26 +5,26 @@
 private import codeql.php.ast.internal.TreeSitter
 
 /** A statement. */
-class Stmt extends Php::AstNode, @php_underscore_statement {
+class Stmt extends Php::AstNode, @php_statement {
   override string getAPrimaryQlClass() { result = "Stmt" }
 }
 
 /** An expression statement. */
 class ExprStmt extends Stmt, Php::ExpressionStatement {
   /** Gets the expression. */
-  Php::AstNode getExpr() { result = Php::ExpressionStatement.super.getExpression() }
+  Php::AstNode getExpr() { result = Php::ExpressionStatement.super.getChild() }
 }
 
 /** An echo statement. */
 class EchoStmt extends Stmt, Php::EchoStatement {
-  /** Gets the `i`th expression. */
-  Php::AstNode getExpr(int i) { result = Php::EchoStatement.super.getExpression(i) }
+  /** Gets the expression. */
+  Php::AstNode getExpr() { result = Php::EchoStatement.super.getChild() }
 }
 
 /** A return statement. */
 class ReturnStmt extends Stmt, Php::ReturnStatement {
   /** Gets the return expression, if any. */
-  Php::AstNode getExpr() { result = Php::ReturnStatement.super.getExpression() }
+  Php::AstNode getExpr() { result = Php::ReturnStatement.super.getChild() }
 }
 
 /** An if statement. */
@@ -57,8 +57,10 @@ class SwitchStmt extends Stmt, Php::SwitchStatement { }
 /** A try statement. */
 class TryStmt extends Stmt, Php::TryStatement { }
 
-/** A throw statement. */
-class ThrowStmt extends Stmt, Php::ThrowStatement { }
+/** A throw expression used as a statement (via ExpressionStatement). */
+class ThrowStmt extends ExprStmt {
+  ThrowStmt() { this.getExpr() instanceof Php::ThrowExpression }
+}
 
 /** A break statement. */
 class BreakStmt extends Stmt, Php::BreakStatement { }

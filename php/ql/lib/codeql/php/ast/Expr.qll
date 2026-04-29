@@ -5,7 +5,7 @@
 private import codeql.php.ast.internal.TreeSitter
 
 /** An expression. */
-class Expr extends Php::AstNode, @php_underscore_expression {
+class Expr extends Php::AstNode, @php_expression {
   override string getAPrimaryQlClass() { result = "Expr" }
 }
 
@@ -33,25 +33,24 @@ class ConditionalExpr extends Expr, Php::ConditionalExpression { }
 /** A cast expression. */
 class CastExpr extends Expr, Php::CastExpression { }
 
-/** An instanceof expression. */
-class InstanceofExpr extends Expr, Php::InstanceofExpression { }
+/** An instanceof expression (modeled as a binary expression with operator "instanceof"). */
+class InstanceofExpr extends BinaryExpr {
+  InstanceofExpr() { this.getOperator() = "instanceof" }
+}
 
 /** A clone expression. */
 class CloneExpr extends Expr, Php::CloneExpression { }
 
 /** An include or require expression. */
 class IncludeExpr extends Expr, Php::IncludeExpression {
-  /** Gets the kind of include (include, include_once, require, require_once). */
-  string getKind() { result = Php::IncludeExpression.super.getKind() }
-
   /** Gets the path expression. */
-  Expr getPath() { result = Php::IncludeExpression.super.getPath() }
+  Expr getPath() { result = Php::IncludeExpression.super.getChild() }
 }
 
 /** A parenthesized expression. */
 class ParenExpr extends Expr, Php::ParenthesizedExpression {
   /** Gets the inner expression. */
-  Expr getInnerExpr() { result = Php::ParenthesizedExpression.super.getExpression() }
+  Expr getInnerExpr() { result = Php::ParenthesizedExpression.super.getChild() }
 }
 
 /** An encapsed (interpolated) string. */
@@ -79,7 +78,7 @@ class PrintExpr extends Expr, Php::PrintIntrinsic { }
 class ShellExecExpr extends Expr, Php::ShellCommandExpression { }
 
 /** A silence expression (@). */
-class SilenceExpr extends Expr, Php::SilenceExpression { }
+class SilenceExpr extends Expr, Php::ErrorSuppressionExpression { }
 
 /** An object creation (new) expression. */
 class NewExpr extends Expr, Php::ObjectCreationExpression { }
@@ -87,10 +86,10 @@ class NewExpr extends Expr, Php::ObjectCreationExpression { }
 /** A subscript (array access) expression. */
 class ArrayAccessExpr extends Expr, Php::SubscriptExpression {
   /** Gets the array being accessed. */
-  Expr getArray() { result = Php::SubscriptExpression.super.getObject() }
+  Expr getArray() { result = Php::SubscriptExpression.super.getChild(0) }
 
   /** Gets the index expression. */
-  Expr getIndex() { result = Php::SubscriptExpression.super.getIndex() }
+  Expr getIndex() { result = Php::SubscriptExpression.super.getChild(1) }
 }
 
 /** A member access (property access) expression. */

@@ -5,7 +5,7 @@
 private import codeql.php.ast.internal.TreeSitter
 
 /** A literal value. */
-class Literal extends Php::AstNode, @php_underscore_literal {
+class Literal extends Php::AstNode, @php_literal {
   override string getAPrimaryQlClass() { result = "Literal" }
 }
 

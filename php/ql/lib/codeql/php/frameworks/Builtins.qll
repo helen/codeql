@@ -105,7 +105,7 @@ private class EchoAsHtmlSink extends HtmlConstruction::Range {
 
   EchoAsHtmlSink() {
     exists(Php::EchoStatement echo |
-      this = echo.getExpression(0) and
+      this = echo.getChild() and
       contentArg = this
     )
   }
