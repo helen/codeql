@@ -13,5 +13,5 @@ module DataFlow {
   private import codeql.php.dataflow.internal.DataFlowImplSpecific
   private import codeql.dataflow.DataFlow
   import DataFlowMake<Location, PhpDataFlow>
-  import Public
+  import codeql.php.dataflow.internal.DataFlowPublic
 }

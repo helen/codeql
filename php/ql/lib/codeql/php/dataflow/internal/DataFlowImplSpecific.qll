@@ -1,14 +1,14 @@
 /**
- * Provides PHP-specific dataflow implementation.
+ * Provides PHP-specific definitions for use in the data flow library.
  */
 
-private import codeql.php.AST
+private import codeql.dataflow.DataFlow
+private import codeql.Locations
 
-/**
- * The PHP-specific input to the shared dataflow library.
- */
-module PhpDataFlow {
-  // Placeholder: This module would be filled in with the full dataflow
-  // implementation connecting to the shared dataflow library.
-  // For now, it provides the basic structure needed for compilation.
+module PhpDataFlow implements InputSig<Location> {
+  import DataFlowPrivate as Private
+  import DataFlowPublic
+  import Private
+
+  predicate neverSkipInPathGraph = Private::neverSkipInPathGraph/1;
 }
