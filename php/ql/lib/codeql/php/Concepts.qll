@@ -130,3 +130,75 @@ module CodeExecution {
     abstract DataFlow::Node getCode();
   }
 }
+
+/**
+ * A data-flow node that deserializes untrusted data.
+ *
+ * Extend this class to refine existing API models. If you want to model new APIs,
+ * extend `Deserialization::Range` instead.
+ */
+class Deserialization extends DataFlow::Node instanceof Deserialization::Range {
+  /** Gets the argument that specifies the data to be deserialized. */
+  DataFlow::Node getData() { result = super.getData() }
+}
+
+/** Provides a class for modeling new deserialization APIs. */
+module Deserialization {
+  /**
+   * A data-flow node that deserializes untrusted data.
+   *
+   * Extend this class to model new APIs.
+   */
+  abstract class Range extends DataFlow::Node {
+    /** Gets the argument that specifies the data to be deserialized. */
+    abstract DataFlow::Node getData();
+  }
+}
+
+/**
+ * A data-flow node that makes an outbound HTTP request (potential SSRF).
+ *
+ * Extend this class to refine existing API models. If you want to model new APIs,
+ * extend `RequestForgery::Range` instead.
+ */
+class RequestForgery extends DataFlow::Node instanceof RequestForgery::Range {
+  /** Gets the argument that specifies the URL of the request. */
+  DataFlow::Node getUrl() { result = super.getUrl() }
+}
+
+/** Provides a class for modeling new request forgery APIs. */
+module RequestForgery {
+  /**
+   * A data-flow node that makes an outbound HTTP request.
+   *
+   * Extend this class to model new APIs.
+   */
+  abstract class Range extends DataFlow::Node {
+    /** Gets the argument that specifies the URL of the request. */
+    abstract DataFlow::Node getUrl();
+  }
+}
+
+/**
+ * A data-flow node that performs an HTTP redirect.
+ *
+ * Extend this class to refine existing API models. If you want to model new APIs,
+ * extend `RedirectSink::Range` instead.
+ */
+class RedirectSink extends DataFlow::Node instanceof RedirectSink::Range {
+  /** Gets the argument that specifies the redirect URL. */
+  DataFlow::Node getUrl() { result = super.getUrl() }
+}
+
+/** Provides a class for modeling new redirect APIs. */
+module RedirectSink {
+  /**
+   * A data-flow node that performs an HTTP redirect.
+   *
+   * Extend this class to model new APIs.
+   */
+  abstract class Range extends DataFlow::Node {
+    /** Gets the argument that specifies the redirect URL. */
+    abstract DataFlow::Node getUrl();
+  }
+}

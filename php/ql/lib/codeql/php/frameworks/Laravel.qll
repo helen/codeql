@@ -111,3 +111,26 @@ private class LaravelResponseSink extends HtmlConstruction::Range {
 
   override DataFlow::Node getContent() { result = contentArg }
 }
+
+/**
+ * A call to `redirect()` helper or `Redirect::to()`, modeled as a redirect sink.
+ */
+private class LaravelRedirectSink extends RedirectSink::Range {
+  DataFlow::Node urlArg;
+
+  LaravelRedirectSink() {
+    exists(FunctionCall call |
+      this = call and
+      call.getFunctionName() = "redirect" and
+      urlArg = call.getArgumentValue(0)
+    )
+    or
+    exists(StaticMethodCall call |
+      this = call and
+      call.getMethodNameString() = "to" and
+      urlArg = call.getArgumentValue(0)
+    )
+  }
+
+  override DataFlow::Node getUrl() { result = urlArg }
+}

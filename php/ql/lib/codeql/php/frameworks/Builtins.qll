@@ -129,3 +129,72 @@ private class LegacyMysqlQueryCall extends SqlExecution::Range {
 
   override DataFlow::Node getSql() { result = sqlArg }
 }
+
+/**
+ * A call to `unserialize()`, modeled as deserialization.
+ */
+private class UnserializeCall extends Deserialization::Range {
+  DataFlow::Node dataArg;
+
+  UnserializeCall() {
+    exists(FunctionCall call |
+      this = call and
+      call.getFunctionName() = "unserialize" and
+      dataArg = call.getArgumentValue(0)
+    )
+  }
+
+  override DataFlow::Node getData() { result = dataArg }
+}
+
+/**
+ * A call to `file_get_contents()`, `curl_exec()`, `fopen()` with a URL,
+ * modeled as a potential SSRF sink.
+ */
+private class HttpRequestCall extends RequestForgery::Range {
+  DataFlow::Node urlArg;
+
+  HttpRequestCall() {
+    exists(FunctionCall call |
+      this = call and
+      call.getFunctionName() = ["file_get_contents", "fopen"] and
+      urlArg = call.getArgumentValue(0)
+    )
+  }
+
+  override DataFlow::Node getUrl() { result = urlArg }
+}
+
+/**
+ * A call to `curl_setopt()` setting CURLOPT_URL, modeled as SSRF.
+ */
+private class CurlSetoptCall extends RequestForgery::Range {
+  DataFlow::Node urlArg;
+
+  CurlSetoptCall() {
+    exists(FunctionCall call |
+      this = call and
+      call.getFunctionName() = "curl_setopt" and
+      urlArg = call.getArgumentValue(2)
+    )
+  }
+
+  override DataFlow::Node getUrl() { result = urlArg }
+}
+
+/**
+ * A call to `header("Location: ...")`, modeled as a redirect sink.
+ */
+private class HeaderRedirectCall extends RedirectSink::Range {
+  DataFlow::Node urlArg;
+
+  HeaderRedirectCall() {
+    exists(FunctionCall call |
+      this = call and
+      call.getFunctionName() = "header" and
+      urlArg = call.getArgumentValue(0)
+    )
+  }
+
+  override DataFlow::Node getUrl() { result = urlArg }
+}

@@ -67,19 +67,18 @@ private class WpOutputFunction extends HtmlConstruction::Range {
 }
 
 /**
- * A call to `wp_redirect()` or `wp_safe_redirect()`, modeled as file system access
- * for open redirect detection.
+ * A call to `wp_redirect()` or `wp_safe_redirect()`, modeled as a redirect sink.
  */
-private class WpRedirectCall extends FileSystemAccess::Range {
-  DataFlow::Node pathArg;
+private class WpRedirectCall extends RedirectSink::Range {
+  DataFlow::Node urlArg;
 
   WpRedirectCall() {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = ["wp_redirect", "wp_safe_redirect"] and
-      pathArg = call.getArgumentValue(0)
+      urlArg = call.getArgumentValue(0)
     )
   }
 
-  override DataFlow::Node getAPathArgument() { result = pathArg }
+  override DataFlow::Node getUrl() { result = urlArg }
 }
