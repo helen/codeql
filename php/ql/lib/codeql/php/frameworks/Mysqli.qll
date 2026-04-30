@@ -18,13 +18,13 @@ private class MysqliQueryCall extends SqlExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = "mysqli_query" and
-      sqlArg = call.getArgument(1).getValue()
+      sqlArg = call.getArgumentValue(1)
     )
     or
     exists(MethodCall call |
       this = call and
       call.getMethodNameString() = "query" and
-      sqlArg = call.getArgument(0).getValue()
+      sqlArg = call.getArgumentValue(0)
     )
   }
 
@@ -41,13 +41,13 @@ private class MysqliPrepareCall extends SqlExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = "mysqli_prepare" and
-      sqlArg = call.getArgument(1).getValue()
+      sqlArg = call.getArgumentValue(1)
     )
     or
     exists(MethodCall call |
       this = call and
       call.getMethodNameString() = "prepare" and
-      sqlArg = call.getArgument(0).getValue()
+      sqlArg = call.getArgumentValue(0)
     )
   }
 

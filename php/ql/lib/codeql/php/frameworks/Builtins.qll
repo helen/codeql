@@ -18,7 +18,7 @@ private class EvalCall extends CodeExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = "eval" and
-      codeArg = call.getArgument(0).getValue()
+      codeArg = call.getArgumentValue(0)
     )
   }
 
@@ -35,7 +35,7 @@ private class AssertCall extends CodeExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = "assert" and
-      codeArg = call.getArgument(0).getValue()
+      codeArg = call.getArgumentValue(0)
     )
   }
 
@@ -53,7 +53,7 @@ private class ShellExecCall extends SystemCommandExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = ["exec", "system", "passthru", "shell_exec", "popen"] and
-      cmdArg = call.getArgument(0).getValue()
+      cmdArg = call.getArgumentValue(0)
     )
   }
 
@@ -70,7 +70,7 @@ private class ProcOpenCall extends SystemCommandExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = "proc_open" and
-      cmdArg = call.getArgument(0).getValue()
+      cmdArg = call.getArgumentValue(0)
     )
   }
 
@@ -90,7 +90,7 @@ private class FileAccessCall extends FileSystemAccess::Range {
       call.getFunctionName() =
         ["file_get_contents", "fopen", "readfile", "file", "file_put_contents", "unlink", "mkdir",
           "rmdir", "copy", "rename"] and
-      pathArg = call.getArgument(0).getValue()
+      pathArg = call.getArgumentValue(0)
     )
   }
 
@@ -123,7 +123,7 @@ private class LegacyMysqlQueryCall extends SqlExecution::Range {
     exists(FunctionCall call |
       this = call and
       call.getFunctionName() = ["mysql_query", "mysql_unbuffered_query"] and
-      sqlArg = call.getArgument(0).getValue()
+      sqlArg = call.getArgumentValue(0)
     )
   }
 

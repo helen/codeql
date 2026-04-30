@@ -18,7 +18,7 @@ private class PdoQueryCall extends SqlExecution::Range {
     exists(MethodCall call |
       this = call and
       call.getMethodNameString() = ["query", "exec"] and
-      sqlArg = call.getArgument(0).getValue()
+      sqlArg = call.getArgumentValue(0)
     )
   }
 
@@ -35,7 +35,7 @@ private class PdoPrepareCall extends SqlExecution::Range {
     exists(MethodCall call |
       this = call and
       call.getMethodNameString() = "prepare" and
-      sqlArg = call.getArgument(0).getValue()
+      sqlArg = call.getArgumentValue(0)
     )
   }
 

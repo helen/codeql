@@ -15,13 +15,18 @@ class Call extends Expr {
   }
 
   /** Gets an argument of this call. */
-  Php::AstNode getAnArgument() {
+  Php::Argument getAnArgument() {
     result = this.getArguments().(Php::Arguments).getChild(_)
   }
 
   /** Gets the `i`th argument of this call. */
-  Php::AstNode getArgument(int i) {
+  Php::Argument getArgument(int i) {
     result = this.getArguments().(Php::Arguments).getChild(i)
+  }
+
+  /** Gets the value expression of the `i`th argument. */
+  Php::AstNode getArgumentValue(int i) {
+    result = this.getArgument(i).getChild()
   }
 
   /** Gets the arguments node. */
