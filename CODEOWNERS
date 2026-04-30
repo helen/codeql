@@ -19,6 +19,8 @@
 /python/ @github/codeql-python
 /python/extractor/ @github/codeql-python @github/code-scanning-language-coverage
 /ql/ @github/codeql-ql-for-ql-reviewers
+/php/ @github/codeql-php
+/php/extractor/ @github/codeql-php @github/code-scanning-language-coverage
 /ruby/ @github/codeql-ruby
 /ruby/extractor/ @github/codeql-ruby @github/code-scanning-language-coverage
 /rust/ @github/codeql-rust

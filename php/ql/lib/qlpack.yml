@@ -1,0 +1,17 @@
+name: codeql/php-all
+version: 0.0.1-dev
+groups: php
+extractor: php
+dbscheme: php.dbscheme
+library: true
+dependencies:
+  codeql/concepts: ${workspace}
+  codeql/controlflow: ${workspace}
+  codeql/dataflow: ${workspace}
+  codeql/mad: ${workspace}
+  codeql/ssa: ${workspace}
+  codeql/threat-models: ${workspace}
+  codeql/util: ${workspace}
+dataExtensions:
+  - codeql/php/frameworks/**/*.model.yml
+warnOnImplicitThis: true

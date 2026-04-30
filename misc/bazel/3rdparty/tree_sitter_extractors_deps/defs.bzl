@@ -293,6 +293,17 @@ def aliases(
 ###############################################################################
 
 _NORMAL_DEPENDENCIES = {
+    "php/extractor": {
+        _COMMON_CONDITION: {
+            "clap": Label("@vendor_ts__clap-4.5.48//:clap"),
+            "rayon": Label("@vendor_ts__rayon-1.11.0//:rayon"),
+            "serde_json": Label("@vendor_ts__serde_json-1.0.145//:serde_json"),
+            "tracing": Label("@vendor_ts__tracing-0.1.41//:tracing"),
+            "tracing-subscriber": Label("@vendor_ts__tracing-subscriber-0.3.20//:tracing_subscriber"),
+            "tree-sitter": Label("@vendor_ts__tree-sitter-0.25.9//:tree_sitter"),
+            "tree-sitter-php": Label("@vendor_ts__tree-sitter-php-0.24.2//:tree_sitter_php"),
+        },
+    },
     "ruby/extractor": {
         _COMMON_CONDITION: {
             "clap": Label("@vendor_ts__clap-4.5.48//:clap"),
@@ -388,6 +399,10 @@ _NORMAL_DEPENDENCIES = {
 }
 
 _NORMAL_ALIASES = {
+    "php/extractor": {
+        _COMMON_CONDITION: {
+        },
+    },
     "ruby/extractor": {
         _COMMON_CONDITION: {
         },
@@ -414,6 +429,8 @@ _NORMAL_ALIASES = {
 }
 
 _NORMAL_DEV_DEPENDENCIES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -434,6 +451,8 @@ _NORMAL_DEV_DEPENDENCIES = {
 }
 
 _NORMAL_DEV_ALIASES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -451,6 +470,8 @@ _NORMAL_DEV_ALIASES = {
 }
 
 _PROC_MACRO_DEPENDENCIES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -466,6 +487,8 @@ _PROC_MACRO_DEPENDENCIES = {
 }
 
 _PROC_MACRO_ALIASES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -481,6 +504,8 @@ _PROC_MACRO_ALIASES = {
 }
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -496,6 +521,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 }
 
 _PROC_MACRO_DEV_ALIASES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -513,6 +540,8 @@ _PROC_MACRO_DEV_ALIASES = {
 }
 
 _BUILD_DEPENDENCIES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -528,6 +557,8 @@ _BUILD_DEPENDENCIES = {
 }
 
 _BUILD_ALIASES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -543,6 +574,8 @@ _BUILD_ALIASES = {
 }
 
 _BUILD_PROC_MACRO_DEPENDENCIES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -558,6 +591,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 }
 
 _BUILD_PROC_MACRO_ALIASES = {
+    "php/extractor": {
+    },
     "ruby/extractor": {
     },
     "rust/ast-generator": {
@@ -3403,6 +3438,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "vendor_ts__tree-sitter-php-0.24.2",
+        sha256 = "0d8c17c3ab69052c5eeaa7ff5cd972dd1bc25d1b97ee779fec391ad3b5df5592",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-php/0.24.2/download"],
+        strip_prefix = "tree-sitter-php-0.24.2",
+        build_file = Label("//misc/bazel/3rdparty/tree_sitter_extractors_deps:BUILD.tree-sitter-php-0.24.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "vendor_ts__tree-sitter-ql-0.23.1",
         sha256 = "80b7bcaf39acefbb199417a6ec2fd0c038083ba115da3e4f4426c820dc76d386",
         type = "tar.gz",
@@ -4159,6 +4204,7 @@ def crate_repositories():
         struct(repo = "vendor_ts__tracing-subscriber-0.3.20", is_dev_dep = False),
         struct(repo = "vendor_ts__tree-sitter-0.25.9", is_dev_dep = False),
         struct(repo = "vendor_ts__tree-sitter-embedded-template-0.25.0", is_dev_dep = False),
+        struct(repo = "vendor_ts__tree-sitter-php-0.24.2", is_dev_dep = False),
         struct(repo = "vendor_ts__tree-sitter-ruby-0.23.1", is_dev_dep = False),
         struct(repo = "vendor_ts__triomphe-0.1.14", is_dev_dep = False),
         struct(repo = "vendor_ts__ungrammar-1.16.1", is_dev_dep = False),
