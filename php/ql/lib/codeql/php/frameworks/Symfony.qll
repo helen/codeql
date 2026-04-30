@@ -10,8 +10,8 @@ private import codeql.php.Concepts
 private import codeql.php.dataflow.RemoteFlowSources
 
 /**
- * A call to `$request->get()`, `$request->query->get()`, `$request->request->get()`,
- * `$request->getContent()`, etc. on a Symfony Request object.
+ * A call to `getContent()`, `getQueryString()`, `getUri()`, or `getPathInfo()`
+ * on a Symfony Request object, modeled as a remote flow source.
  */
 private class SymfonyRequestInput extends RemoteFlowSource::Range {
   SymfonyRequestInput() {

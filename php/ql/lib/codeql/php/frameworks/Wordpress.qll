@@ -48,9 +48,8 @@ private class WpdbPrepareCall extends SqlExecution::Range {
 }
 
 /**
- * WordPress functions that output HTML: `the_title()`, `the_content()`,
- * `the_excerpt()`, `bloginfo()`.
- * These echo their output and are thus HTML construction sinks if user data flows in.
+ * A call to `wp_die()` or `wp_send_json()`, modeled as HTML construction sinks
+ * since they output content to the response.
  */
 private class WpOutputFunction extends HtmlConstruction::Range {
   DataFlow::Node contentArg;

@@ -26,7 +26,8 @@ private class EvalCall extends CodeExecution::Range {
 }
 
 /**
- * A call to `assert()` with a string argument, modeled as code execution.
+ * A call to `assert()`, modeled as code execution since string arguments
+ * are evaluated as PHP code in older PHP versions.
  */
 private class AssertCall extends CodeExecution::Range {
   DataFlow::Node codeArg;
@@ -98,7 +99,7 @@ private class FileAccessCall extends FileSystemAccess::Range {
 }
 
 /**
- * An `echo` statement or `print` expression in an HTML context, modeled as HTML construction.
+ * An `echo` statement, modeled as HTML construction since it outputs content to the response.
  */
 private class EchoAsHtmlSink extends HtmlConstruction::Range {
   DataFlow::Node contentArg;
