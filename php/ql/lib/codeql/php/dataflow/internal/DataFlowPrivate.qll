@@ -60,9 +60,21 @@ class DataFlowCall extends Php::AstNode {
     result = this.(Php::ScopedCallExpression).getArguments()
   }
 
-  /** Gets the called function name, for direct function calls only. */
+  /** Gets the called function/method name, for dispatch resolution. */
   string getCalledFunctionName() {
+    // Direct function call: foo() or \Namespace\foo()
     result = this.(Php::FunctionCallExpression).getFunction().(Php::Name).getValue()
+    or
+    result = this.(Php::FunctionCallExpression).getFunction().(Php::QualifiedName).getChild().getValue()
+    or
+    // Method call: $obj->method()
+    result = this.(Php::MemberCallExpression).getName().(Php::Name).getValue()
+    or
+    // Nullsafe method call: $obj?->method()
+    result = this.(Php::NullsafeMemberCallExpression).getName().(Php::Name).getValue()
+    or
+    // Static method call: ClassName::method()
+    result = this.(Php::ScopedCallExpression).getName().(Php::Name).getValue()
   }
 }
 
@@ -116,13 +128,29 @@ Node exprNode(DataFlowExpr e) { result = e }
 
 /**
  * Gets a viable implementation of the target of the given call.
- * For now, only handles direct function calls matched by name.
+ * Resolves by name matching:
+ * - Direct function calls → FunctionDefinition with same name
+ * - Method/static calls → MethodDeclaration with same name
  */
 DataFlowCallable viableCallable(DataFlowCall c) {
-  exists(string name |
-    name = c.getCalledFunctionName() and
-    name = result.getCallableName() and
-    result instanceof Php::FunctionDefinition
+  exists(string name | name = c.getCalledFunctionName() |
+    // Function call resolves to function definition
+    (
+      c instanceof Php::FunctionCallExpression and
+      name = result.getCallableName() and
+      result instanceof Php::FunctionDefinition
+    )
+    or
+    // Method/static call resolves to method declaration
+    (
+      (
+        c instanceof Php::MemberCallExpression or
+        c instanceof Php::NullsafeMemberCallExpression or
+        c instanceof Php::ScopedCallExpression
+      ) and
+      name = result.getCallableName() and
+      result instanceof Php::MethodDeclaration
+    )
   )
 }
 
@@ -144,13 +172,35 @@ predicate typeStrongerThan(DataFlowType t1, DataFlowType t2) { none() }
 
 // --- Content ---
 
-private newtype TContent = TFieldContent(string name) { none() }
+private newtype TContent =
+  TArrayElementContent() or
+  TPropertyContent(string name) {
+    exists(Php::MemberAccessExpression mae | name = mae.getName().(Php::Name).getValue())
+    or
+    exists(Php::NullsafeMemberAccessExpression mae | name = mae.getName().(Php::Name).getValue())
+  }
 
 class Content extends TContent {
-  string toString() { none() }
+  string toString() {
+    this = TArrayElementContent() and result = "ArrayElement"
+    or
+    exists(string name | this = TPropertyContent(name) and result = name)
+  }
 }
 
-predicate forceHighPrecision(Content c) { none() }
+/** An array element content (any index). */
+class ArrayElementContent extends Content, TArrayElementContent { }
+
+/** An object property content (by name). */
+class PropertyContent extends Content, TPropertyContent {
+  string name;
+
+  PropertyContent() { this = TPropertyContent(name) }
+
+  string getPropertyName() { result = name }
+}
+
+predicate forceHighPrecision(Content c) { c instanceof PropertyContent }
 
 class ContentApprox extends Content {
   string toString() { result = super.toString() }
@@ -347,9 +397,65 @@ predicate simpleLocalFlowStep(Node node1, Node node2, string model) {
 
 predicate jumpStep(Node node1, Node node2) { none() }
 
-predicate readStep(Node node1, ContentSet c, Node node2) { none() }
+/**
+ * Holds if data flows from `node1` to `node2` by reading content `c`.
+ */
+predicate readStep(Node node1, ContentSet c, Node node2) {
+  // Array read: $arr[key] — data flows from $arr through ArrayElement content to $arr[key]
+  exists(Php::SubscriptExpression sub |
+    node1 = sub.getChild(0) and
+    node2 = sub and
+    c instanceof ArrayElementContent
+  )
+  or
+  // Property read: $obj->prop — data flows from $obj through PropertyContent to $obj->prop
+  exists(Php::MemberAccessExpression mae, string name |
+    node1 = mae.getObject() and
+    node2 = mae and
+    name = mae.getName().(Php::Name).getValue() and
+    c = TPropertyContent(name)
+  )
+  or
+  // Nullsafe property read: $obj?->prop
+  exists(Php::NullsafeMemberAccessExpression mae, string name |
+    node1 = mae.getObject() and
+    node2 = mae and
+    name = mae.getName().(Php::Name).getValue() and
+    c = TPropertyContent(name)
+  )
+}
 
-predicate storeStep(Node node1, ContentSet c, Node node2) { none() }
+/**
+ * Holds if data flows from `node1` to `node2` by storing into content `c`.
+ */
+predicate storeStep(Node node1, ContentSet c, Node node2) {
+  // Array store: $arr[key] = value — data flows from value into $arr through ArrayElement
+  exists(Php::AssignmentExpression assign, Php::SubscriptExpression sub |
+    sub = assign.getLeft() and
+    node1 = assign.getRight() and
+    node2 = sub.getChild(0) and
+    c instanceof ArrayElementContent
+  )
+  or
+  // Property store: $obj->prop = value — data flows from value into $obj through PropertyContent
+  exists(Php::AssignmentExpression assign, Php::MemberAccessExpression mae, string name |
+    mae = assign.getLeft() and
+    node1 = assign.getRight() and
+    node2 = mae.getObject() and
+    name = mae.getName().(Php::Name).getValue() and
+    c = TPropertyContent(name)
+  )
+  or
+  // Array creation: [value1, key => value2, ...] — values flow into the array
+  exists(Php::ArrayElementInitializer init, Php::ArrayCreationExpression arr |
+    init = arr.getChild(_) and
+    // For key => value pairs, the value is the last child.
+    // For plain values, child(0) is the value.
+    node1 = init.getChild(max(int i | exists(init.getChild(i)))) and
+    node2 = arr and
+    c instanceof ArrayElementContent
+  )
+}
 
 predicate clearsContent(Node n, ContentSet c) { none() }
 
@@ -375,13 +481,34 @@ predicate localMustFlowStep(Node node1, Node node2) {
 
 // --- Lambdas ---
 
-private newtype TLambdaCallKind = TNoLambdaCallKind()
+private newtype TLambdaCallKind = TPhpLambdaCall()
 
 class LambdaCallKind = TLambdaCallKind;
 
-predicate lambdaCreation(Node creation, LambdaCallKind kind, DataFlowCallable c) { none() }
+/**
+ * Holds if `creation` creates a callable `c` (anonymous function or arrow function).
+ */
+predicate lambdaCreation(Node creation, LambdaCallKind kind, DataFlowCallable c) {
+  kind = TPhpLambdaCall() and
+  (
+    creation instanceof Php::AnonymousFunction and c = creation
+    or
+    creation instanceof Php::ArrowFunction and c = creation
+  )
+}
 
-predicate lambdaCall(DataFlowCall call, LambdaCallKind kind, Node receiver) { none() }
+/**
+ * Holds if `call` invokes a lambda/closure through `receiver`.
+ * This covers variable function calls like `$fn()`.
+ */
+predicate lambdaCall(DataFlowCall call, LambdaCallKind kind, Node receiver) {
+  kind = TPhpLambdaCall() and
+  exists(Php::FunctionCallExpression fce |
+    fce = call and
+    receiver = fce.getFunction() and
+    receiver instanceof Php::VariableName
+  )
+}
 
 predicate additionalLambdaFlowStep(Node nodeFrom, Node nodeTo, boolean preservesValue) { none() }
 
