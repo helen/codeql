@@ -8,6 +8,8 @@ private import codeql.php.AST
 private import codeql.php.ast.internal.TreeSitter
 private import codeql.Locations
 private import DataFlowPublic
+private import SsaImpl as SsaImpl
+private import codeql.php.controlflow.BasicBlocks as BasicBlocks
 
 class DataFlowSecondLevelScope = Unit;
 
@@ -297,12 +299,48 @@ predicate simpleLocalFlowStep(Node node1, Node node2, string model) {
       node2 = arrow
     )
     or
-    // Variable flow: a write of $x flows to subsequent reads of $x in the same callable.
-    // Over-approximates without SSA/CFG (all writes to all later reads), but sound for security analysis.
+    // SSA-based variable flow: assignment flows to reads reached by that definition.
+    exists(
+      SsaImpl::Definition def, SsaImpl::PhpSourceVariable v, BasicBlocks::BasicBlock writeBb,
+      int writeI, BasicBlocks::BasicBlock readBb, int readI
+    |
+      def.definesAt(v, writeBb, writeI) and
+      SsaImpl::ssaDefReachesRead(v, def, readBb, readI) and
+      writeI >= 0 and
+      node1 = writeBb.getNode(writeI).getAstNode() and
+      node2 = readBb.getNode(readI).getAstNode()
+    )
+    or
+    // SSA-based parameter flow: parameter definition (at index -1) flows to reads.
+    exists(
+      SsaImpl::Definition def, SsaImpl::PhpSourceVariable v, BasicBlocks::BasicBlock writeBb,
+      BasicBlocks::BasicBlock readBb, int readI
+    |
+      def.definesAt(v, writeBb, -1) and
+      SsaImpl::ssaDefReachesRead(v, def, readBb, readI) and
+      // The parameter node is the source
+      exists(Php::SimpleParameter param |
+        param.getName().getChild().getValue() = v.getVariableName() and
+        nodeGetEnclosingCallable(param) = nodeGetEnclosingCallable(readBb.getNode(readI).getAstNode()) and
+        node1 = param
+      ) and
+      node2 = readBb.getNode(readI).getAstNode()
+    )
+    or
+    // Name-based variable flow fallback: covers cases where SSA doesn't have coverage
+    // (e.g., variables in scopes without a complete CFG, or dynamic variables).
     exists(string name, DataFlowCallable c, int writeLine, int readLine |
       variableWrite(node1, name, c, writeLine) and
       variableReadAt(node2, name, c, readLine) and
-      writeLine <= readLine
+      writeLine <= readLine and
+      // Only use fallback when SSA doesn't cover this particular read
+      not exists(
+        SsaImpl::Definition def, SsaImpl::PhpSourceVariable sv, BasicBlocks::BasicBlock bb, int i
+      |
+        sv.getVariableName() = name and
+        SsaImpl::ssaDefReachesRead(sv, def, bb, i) and
+        bb.getNode(i).getAstNode() = node2
+      )
     )
   )
 }
