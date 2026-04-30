@@ -79,7 +79,7 @@ private class ProcOpenCall extends SystemCommandExecution::Range {
 }
 
 /**
- * A call to `file_get_contents()`, `fopen()`, `readfile()`, `file()`, or `include`/`require`,
+ * A call to `file_get_contents()`, `fopen()`, `readfile()`, or other file system functions,
  * modeled as file system access.
  */
 private class FileAccessCall extends FileSystemAccess::Range {
@@ -198,4 +198,74 @@ private class HeaderRedirectCall extends RedirectSink::Range {
   }
 
   override DataFlow::Node getUrl() { result = urlArg }
+}
+
+/**
+ * A call to `create_function()`, modeled as code execution since the second
+ * argument is evaluated as PHP code.
+ */
+private class CreateFunctionCall extends CodeExecution::Range {
+  DataFlow::Node codeArg;
+
+  CreateFunctionCall() {
+    exists(FunctionCall call |
+      this = call and
+      call.getFunctionName() = "create_function" and
+      codeArg = call.getArgumentValue(1)
+    )
+  }
+
+  override DataFlow::Node getCode() { result = codeArg }
+}
+
+/**
+ * A backtick shell command expression (`` `...` ``), modeled as system command execution.
+ */
+private class BacktickExec extends SystemCommandExecution::Range {
+  DataFlow::Node cmdArg;
+
+  BacktickExec() {
+    exists(Php::ShellCommandExpression shell |
+      this = shell and
+      cmdArg = shell.getChild(0)
+    )
+  }
+
+  override DataFlow::Node getCommand() { result = cmdArg }
+}
+
+/**
+ * A `print` expression, modeled as HTML construction since it outputs content to the response.
+ */
+private class PrintAsHtmlSink extends HtmlConstruction::Range {
+  DataFlow::Node contentArg;
+
+  PrintAsHtmlSink() {
+    exists(Php::PrintIntrinsic p |
+      this = p.getChild() and
+      contentArg = this
+    )
+  }
+
+  override DataFlow::Node getContent() { result = contentArg }
+}
+
+/**
+ * An `include`, `include_once`, `require`, or `require_once` expression,
+ * modeled as file system access for path injection (LFI/RFI).
+ */
+private class IncludeAsFileAccess extends FileSystemAccess::Range {
+  DataFlow::Node pathArg;
+
+  IncludeAsFileAccess() {
+    exists(Php::IncludeExpression e | this = e and pathArg = e.getChild())
+    or
+    exists(Php::IncludeOnceExpression e | this = e and pathArg = e.getChild())
+    or
+    exists(Php::RequireExpression e | this = e and pathArg = e.getChild())
+    or
+    exists(Php::RequireOnceExpression e | this = e and pathArg = e.getChild())
+  }
+
+  override DataFlow::Node getAPathArgument() { result = pathArg }
 }

@@ -3,7 +3,7 @@
  */
 
 import codeql.php.security.SsrfQuery
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 
 from DataFlow::Node source, DataFlow::Node sink
 where

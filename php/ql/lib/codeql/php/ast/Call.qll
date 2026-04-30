@@ -54,7 +54,7 @@ class FunctionCall extends Call, Php::FunctionCallExpression {
   string getFunctionName() {
     result = this.getFunction().(Php::Name).getValue()
     or
-    result = this.getFunction().(Php::QualifiedName).getAPrimaryQlClass() // fallback
+    result = this.getFunction().(Php::QualifiedName).getChild().getValue()
   }
 
   /** Gets the function name node. */

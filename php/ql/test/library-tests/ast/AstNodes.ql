@@ -7,5 +7,5 @@
 
 import php
 
-from AstNode node
+from Ast::AstNode node
 select node, node.getAPrimaryQlClass(), node.getLocation()

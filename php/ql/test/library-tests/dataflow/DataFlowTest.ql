@@ -6,7 +6,7 @@
  */
 
 import php
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 
 from DataFlow::Node node
 where node instanceof DataFlow::ExprNode
