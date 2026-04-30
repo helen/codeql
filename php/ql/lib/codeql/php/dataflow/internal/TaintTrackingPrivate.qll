@@ -1,6 +1,9 @@
 /**
  * Provides PHP-specific taint tracking predicates.
  */
+overlay[local]
+module;
+
 
 private import DataFlowPrivate
 private import codeql.php.DataFlow

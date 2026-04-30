@@ -1,6 +1,8 @@
 /**
  * Provides PHP-specific dataflow predicates needed by the shared dataflow library.
  */
+overlay[local]
+module;
 
 private import codeql.util.Unit
 private import codeql.dataflow.DataFlow
@@ -203,7 +205,7 @@ class PropertyContent extends Content, TPropertyContent {
 predicate forceHighPrecision(Content c) { c instanceof PropertyContent }
 
 class ContentApprox extends Content {
-  string toString() { result = super.toString() }
+  override string toString() { result = super.toString() }
 }
 
 ContentApprox getContentApprox(Content c) { result = c }

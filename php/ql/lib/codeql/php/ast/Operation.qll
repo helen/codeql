@@ -1,12 +1,16 @@
 /**
  * Provides classes for working with PHP operations.
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 private import codeql.php.ast.Expr
 
 /** A binary operation. */
-class BinaryOp extends BinaryExpr { }
+class BinaryOp extends BinaryExpr {
+}
 
 /** An addition expression. */
 class AddExpr extends BinaryOp {

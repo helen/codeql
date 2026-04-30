@@ -1,9 +1,11 @@
 /**
  * Provides the PHP SSA (Static Single Assignment) implementation using the shared SSA library.
  */
+overlay[local]
+module;
 
 private import codeql.ssa.Ssa as SsaImplCommon
-private import codeql.php.ast.internal.TreeSitter as Php
+private import codeql.php.ast.internal.TreeSitter
 private import codeql.php.controlflow.BasicBlocks as BasicBlocks
 private import codeql.php.controlflow.internal.CfgImpl as CfgImpl
 private import codeql.Locations
@@ -211,8 +213,9 @@ predicate firstRead(Definition def, BasicBlocks::CfgNode read) {
  * passing through another read.
  */
 predicate adjacentReadPair(Definition def, BasicBlocks::CfgNode read1, BasicBlocks::CfgNode read2) {
-  exists(BasicBlock bb1, int i1, BasicBlock bb2, int i2 |
-    Impl::adjacentUseUseSameVar(def, bb1, i1, bb2, i2) and
+  exists(BasicBlock bb1, int i1, BasicBlock bb2, int i2, PhpSourceVariable v |
+    Impl::ssaDefReachesRead(v, def, bb1, i1) and
+    Impl::adjacentUseUse(bb1, i1, bb2, i2, v, true) and
     read1 = bb1.getNode(i1) and
     read2 = bb2.getNode(i2)
   )

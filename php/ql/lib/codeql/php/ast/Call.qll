@@ -1,6 +1,9 @@
 /**
  * Provides classes for working with PHP function and method calls.
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 private import codeql.php.ast.Expr

@@ -15,6 +15,7 @@
  */
 
 import codeql.php.AST
+import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
 import codeql.php.security.CodeInjectionQuery
 
 from DataFlow::Node source, DataFlow::Node sink

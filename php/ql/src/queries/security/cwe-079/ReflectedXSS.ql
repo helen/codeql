@@ -14,6 +14,7 @@
  */
 
 import codeql.php.AST
+import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
 import codeql.php.security.ReflectedXssQuery
 
 from DataFlow::Node source, DataFlow::Node sink

@@ -1,4 +1,6 @@
 /** Provides classes representing basic blocks. */
+overlay[local]
+module;
 
 private import codeql.php.ast.internal.TreeSitter
 private import codeql.php.controlflow.internal.CfgImpl as CfgImpl
@@ -65,19 +67,15 @@ final class AnnotatedExitBasicBlock extends BasicBlock {
   predicate isNormal() { normal = true }
 }
 
-private class BasicBlockAlias = BasicBlock;
-
-private class EntryBasicBlockAlias = EntryBasicBlock;
-
 /**
  * Module that implements `CfgSig` for use with the shared SSA library.
  */
 module Cfg implements BB::CfgSig<Location> {
   class ControlFlowNode = CfgNode;
 
-  class BasicBlock = BasicBlockAlias;
+  class BasicBlock = BasicBlocksImpl::BasicBlock;
 
-  class EntryBasicBlock = EntryBasicBlockAlias;
+  class EntryBasicBlock = BasicBlocksImpl::EntryBasicBlock;
 
   predicate dominatingEdge(BasicBlock bb1, BasicBlock bb2) {
     BasicBlocksImpl::dominatingEdge(bb1, bb2)

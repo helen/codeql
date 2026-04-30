@@ -10,6 +10,9 @@
  * import codeql.php.CFG
  * ```
  */
+overlay[local]
+module;
+
 
 import codeql.php.ast.internal.TreeSitter
 private import codeql.php.controlflow.internal.CfgImpl as Impl

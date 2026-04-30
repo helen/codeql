@@ -1,44 +1,32 @@
 /**
  * Provides classes for working with PHP literals.
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 
 /** A literal value. */
 class Literal extends Php::AstNode, @php_literal {
-  override string getAPrimaryQlClass() { result = "Literal" }
 }
 
 /** An integer literal. */
-class IntegerLiteral extends Literal, @php_token_integer {
-  /** Gets the value of this literal as a string. */
-  string getValue() { php_token_integer_def(this, result) }
-
-  override string getAPrimaryQlClass() { result = "IntegerLiteral" }
+class IntegerLiteral extends Literal, Php::Integer {
 }
 
 /** A float literal. */
-class FloatLiteral extends Literal, @php_token_float {
-  /** Gets the value of this literal as a string. */
-  string getValue() { php_token_float_def(this, result) }
-
-  override string getAPrimaryQlClass() { result = "FloatLiteral" }
+class FloatLiteral extends Literal, Php::Float {
 }
 
-/** A string literal. */
-class StringLiteral extends Literal, @php_token_string {
-  /** Gets the value of this literal. */
-  string getValue() { php_token_string_def(this, result) }
-
-  override string getAPrimaryQlClass() { result = "StringLiteral" }
+/** A string literal (single or double quoted). */
+class StringLiteral extends Literal, @php_string__ {
 }
 
 /** A boolean literal (true or false). */
-class BooleanLiteral extends Literal, @php_token_boolean {
-  override string getAPrimaryQlClass() { result = "BooleanLiteral" }
+class BooleanLiteral extends Literal, Php::Boolean {
 }
 
 /** The null literal. */
-class NullLiteral extends Literal, @php_token_null {
-  override string getAPrimaryQlClass() { result = "NullLiteral" }
+class NullLiteral extends Literal, Php::Null {
 }

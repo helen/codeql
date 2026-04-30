@@ -1,12 +1,14 @@
 /**
  * Provides classes for working with PHP statements.
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 
 /** A statement. */
 class Stmt extends Php::AstNode, @php_statement {
-  override string getAPrimaryQlClass() { result = "Stmt" }
 }
 
 /** An expression statement. */
@@ -40,22 +42,28 @@ class IfStmt extends Stmt, Php::IfStatement {
 }
 
 /** A while statement. */
-class WhileStmt extends Stmt, Php::WhileStatement { }
+class WhileStmt extends Stmt, Php::WhileStatement {
+}
 
 /** A do-while statement. */
-class DoWhileStmt extends Stmt, Php::DoStatement { }
+class DoWhileStmt extends Stmt, Php::DoStatement {
+}
 
 /** A for statement. */
-class ForStmt extends Stmt, Php::ForStatement { }
+class ForStmt extends Stmt, Php::ForStatement {
+}
 
 /** A foreach statement. */
-class ForeachStmt extends Stmt, Php::ForeachStatement { }
+class ForeachStmt extends Stmt, Php::ForeachStatement {
+}
 
 /** A switch statement. */
-class SwitchStmt extends Stmt, Php::SwitchStatement { }
+class SwitchStmt extends Stmt, Php::SwitchStatement {
+}
 
 /** A try statement. */
-class TryStmt extends Stmt, Php::TryStatement { }
+class TryStmt extends Stmt, Php::TryStatement {
+}
 
 /** A throw expression used as a statement (via ExpressionStatement). */
 class ThrowStmt extends ExprStmt {
@@ -63,10 +71,13 @@ class ThrowStmt extends ExprStmt {
 }
 
 /** A break statement. */
-class BreakStmt extends Stmt, Php::BreakStatement { }
+class BreakStmt extends Stmt, Php::BreakStatement {
+}
 
 /** A continue statement. */
-class ContinueStmt extends Stmt, Php::ContinueStatement { }
+class ContinueStmt extends Stmt, Php::ContinueStatement {
+}
 
 /** A compound statement (block). */
-class BlockStmt extends Stmt, Php::CompoundStatement { }
+class BlockStmt extends Stmt, Php::CompoundStatement {
+}

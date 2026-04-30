@@ -1,6 +1,9 @@
 /**
  * Internal AST helpers for PHP.
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 

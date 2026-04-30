@@ -1,6 +1,8 @@
 /**
  * Provides public predicates for data flow.
  */
+overlay[local]
+module;
 
 private import codeql.php.AST
 private import codeql.php.ast.internal.TreeSitter

@@ -4,8 +4,10 @@
  * A completion represents how the execution of a statement or expression
  * terminates: normally, by returning, throwing, breaking, or continuing.
  */
+overlay[local]
+module;
 
-private import codeql.php.ast.internal.TreeSitter as Php
+private import codeql.php.ast.internal.TreeSitter
 import codeql.controlflow.SuccessorType
 
 private newtype TCompletion =
@@ -59,6 +61,16 @@ class BooleanCompletion extends NormalCompletion, TBooleanCompletion {
 
   /** Gets the boolean value of this completion. */
   boolean getValue() { result = value }
+}
+
+/** A true completion. */
+class TrueCompletion extends BooleanCompletion {
+  TrueCompletion() { this.getValue() = true }
+}
+
+/** A false completion. */
+class FalseCompletion extends BooleanCompletion {
+  FalseCompletion() { this.getValue() = false }
 }
 
 /** Return completion: a `return` statement was executed. */

@@ -1,6 +1,9 @@
 /**
  * Provides classes for working with PHP declarations (functions, classes, etc.).
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 

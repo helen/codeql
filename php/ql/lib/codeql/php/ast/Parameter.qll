@@ -1,6 +1,9 @@
 /**
  * Provides classes for working with PHP parameters.
  */
+overlay[local]
+module;
+
 
 private import codeql.php.ast.internal.TreeSitter
 
