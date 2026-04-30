@@ -3,16 +3,20 @@
  * vulnerabilities, as well as extension points for adding your own.
  */
 
-private import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+private import codeql.php.DataFlow
+private import codeql.php.TaintTracking
 import SqlInjectionCustomizations::SqlInjection
 
 /**
  * A taint-tracking configuration for detecting SQL injection vulnerabilities.
  */
-module SqlInjectionConfig {
+module SqlInjectionConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) { source instanceof Source }
 
   predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
 
   predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
 }
+
+/** Taint-tracking for detecting SQL injection vulnerabilities. */
+module SqlInjectionFlow = TaintTracking::Global<SqlInjectionConfig>;

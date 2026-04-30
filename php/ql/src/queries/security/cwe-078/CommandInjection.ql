@@ -13,12 +13,11 @@
  *       external/cwe/cwe-088
  */
 
-import codeql.php.AST
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 import codeql.php.security.CommandInjectionQuery
+import CommandInjectionFlow::PathGraph
 
-from DataFlow::Node source, DataFlow::Node sink
-where
-  CommandInjectionConfig::isSource(source) and
-  CommandInjectionConfig::isSink(sink)
-select sink, "This command depends on a $@.", source, "user-provided value"
+from CommandInjectionFlow::PathNode source, CommandInjectionFlow::PathNode sink
+where CommandInjectionFlow::flowPath(source, sink)
+select sink.getNode(), source, sink, "This command depends on a $@.", source.getNode(),
+  "user-provided value"

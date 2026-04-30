@@ -11,11 +11,11 @@
  *       external/cwe/cwe-601
  */
 
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 import codeql.php.security.OpenRedirectQuery
+import OpenRedirectFlow::PathGraph
 
-from DataFlow::Node source, DataFlow::Node sink
-where
-  OpenRedirectConfig::isSource(source) and
-  OpenRedirectConfig::isSink(sink)
-select sink, "This redirect URL depends on a $@.", source, "user-provided value"
+from OpenRedirectFlow::PathNode source, OpenRedirectFlow::PathNode sink
+where OpenRedirectFlow::flowPath(source, sink)
+select sink.getNode(), source, sink, "This redirect URL depends on a $@.", source.getNode(),
+  "user-provided value"

@@ -11,11 +11,11 @@
  *       external/cwe/cwe-918
  */
 
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 import codeql.php.security.SsrfQuery
+import SsrfFlow::PathGraph
 
-from DataFlow::Node source, DataFlow::Node sink
-where
-  SsrfConfig::isSource(source) and
-  SsrfConfig::isSink(sink)
-select sink, "This request URL depends on a $@.", source, "user-provided value"
+from SsrfFlow::PathNode source, SsrfFlow::PathNode sink
+where SsrfFlow::flowPath(source, sink)
+select sink.getNode(), source, sink, "This request URL depends on a $@.", source.getNode(),
+  "user-provided value"

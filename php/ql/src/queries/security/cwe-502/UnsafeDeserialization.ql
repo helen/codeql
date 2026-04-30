@@ -11,11 +11,11 @@
  *       external/cwe/cwe-502
  */
 
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 import codeql.php.security.UnsafeDeserializationQuery
+import UnsafeDeserializationFlow::PathGraph
 
-from DataFlow::Node source, DataFlow::Node sink
-where
-  UnsafeDeserializationConfig::isSource(source) and
-  UnsafeDeserializationConfig::isSink(sink)
-select sink, "This deserialization depends on a $@.", source, "user-provided value"
+from UnsafeDeserializationFlow::PathNode source, UnsafeDeserializationFlow::PathNode sink
+where UnsafeDeserializationFlow::flowPath(source, sink)
+select sink.getNode(), source, sink, "This deserialization depends on a $@.", source.getNode(),
+  "user-provided value"

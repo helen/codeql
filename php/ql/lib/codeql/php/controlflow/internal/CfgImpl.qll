@@ -416,11 +416,11 @@ private class SwitchStatementTree extends PreOrderTree instanceof Php::SwitchSta
 /** A try statement. */
 private class TryStatementTree extends PreOrderTree instanceof Php::TryStatement {
   private Php::CatchClause getACatchClause() {
-    result = super.getChild(_) and result instanceof Php::CatchClause
+    result = super.getChild(_)
   }
 
   private Php::FinallyClause getFinallyClause() {
-    result = super.getChild(_) and result instanceof Php::FinallyClause
+    result = super.getChild(_)
   }
 
   override predicate last(Php::AstNode last, Completion c) {

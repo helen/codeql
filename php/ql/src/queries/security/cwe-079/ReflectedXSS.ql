@@ -13,12 +13,11 @@
  *       external/cwe/cwe-116
  */
 
-import codeql.php.AST
-import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
+import codeql.php.DataFlow
 import codeql.php.security.ReflectedXssQuery
+import ReflectedXssFlow::PathGraph
 
-from DataFlow::Node source, DataFlow::Node sink
-where
-  ReflectedXssConfig::isSource(source) and
-  ReflectedXssConfig::isSink(sink)
-select sink, "Cross-site scripting vulnerability due to a $@.", source, "user-provided value"
+from ReflectedXssFlow::PathNode source, ReflectedXssFlow::PathNode sink
+where ReflectedXssFlow::flowPath(source, sink)
+select sink.getNode(), source, sink, "Cross-site scripting vulnerability due to a $@.",
+  source.getNode(), "user-provided value"
