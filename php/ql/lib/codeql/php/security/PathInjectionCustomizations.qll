@@ -4,6 +4,8 @@
  */
 
 private import codeql.php.Concepts
+private import codeql.php.ast.internal.TreeSitter
+private import codeql.php.ast.Call
 private import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
 private import codeql.php.dataflow.RemoteFlowSources
 
@@ -27,5 +29,15 @@ module PathInjection {
   /** A file system access path argument, considered as a flow sink. */
   private class FileSystemAccessAsSink extends Sink {
     FileSystemAccessAsSink() { this = any(FileSystemAccess e).getAPathArgument() }
+  }
+
+  /** A call to basename() or realpath() sanitizes path injection. */
+  private class PathSanitizer extends Sanitizer {
+    PathSanitizer() {
+      exists(FunctionCall call |
+        this = call and
+        call.getFunctionName() = ["basename", "realpath"]
+      )
+    }
   }
 }

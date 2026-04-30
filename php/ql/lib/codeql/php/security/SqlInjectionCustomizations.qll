@@ -4,6 +4,8 @@
  */
 
 private import codeql.php.Concepts
+private import codeql.php.ast.internal.TreeSitter
+private import codeql.php.ast.Call
 private import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
 private import codeql.php.dataflow.RemoteFlowSources
 
@@ -27,5 +29,37 @@ module SqlInjection {
   /** An SQL statement of a SQL execution, considered as a flow sink. */
   private class SqlExecutionAsSink extends Sink {
     SqlExecutionAsSink() { this = any(SqlExecution e).getSql() }
+  }
+
+  /** A numeric cast or conversion function sanitizes SQL injection. */
+  private class NumericSanitizer extends Sanitizer {
+    NumericSanitizer() {
+      exists(Php::CastExpression cast |
+        this = cast and
+        cast.getType().(Php::Token).getValue() = ["(int)", "(integer)", "(float)", "(double)"]
+      )
+      or
+      exists(FunctionCall call |
+        this = call and
+        call.getFunctionName() = ["intval", "floatval", "doubleval", "abs", "round", "ceil",
+            "floor"]
+      )
+    }
+  }
+
+  /** A call to a real_escape_string function sanitizes SQL injection. */
+  private class EscapeStringSanitizer extends Sanitizer {
+    EscapeStringSanitizer() {
+      exists(FunctionCall call |
+        this = call and
+        call.getFunctionName() =
+          ["mysqli_real_escape_string", "mysql_real_escape_string", "addslashes"]
+      )
+      or
+      exists(MethodCall call |
+        this = call and
+        call.getMethodNameString() = ["real_escape_string", "escape_string", "quote"]
+      )
+    }
   }
 }

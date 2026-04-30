@@ -4,6 +4,8 @@
  */
 
 private import codeql.php.Concepts
+private import codeql.php.ast.internal.TreeSitter
+private import codeql.php.ast.Call
 private import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
 private import codeql.php.dataflow.RemoteFlowSources
 
@@ -27,5 +29,21 @@ module CodeInjection {
   /** A code execution argument, considered as a flow sink. */
   private class CodeExecutionAsSink extends Sink {
     CodeExecutionAsSink() { this = any(CodeExecution e).getCode() }
+  }
+
+  /** A numeric cast or type coercion sanitizes code injection. */
+  private class NumericSanitizer extends Sanitizer {
+    NumericSanitizer() {
+      exists(Php::CastExpression cast |
+        this = cast and
+        cast.getType().(Php::Token).getValue() = ["(int)", "(integer)", "(float)", "(double)",
+            "(bool)", "(boolean)"]
+      )
+      or
+      exists(FunctionCall call |
+        this = call and
+        call.getFunctionName() = ["intval", "floatval", "doubleval"]
+      )
+    }
   }
 }

@@ -4,6 +4,8 @@
  */
 
 private import codeql.php.Concepts
+private import codeql.php.ast.internal.TreeSitter
+private import codeql.php.ast.Call
 private import codeql.php.dataflow.internal.DataFlowPublic as DataFlow
 private import codeql.php.dataflow.RemoteFlowSources
 
@@ -32,5 +34,15 @@ module CommandInjection {
   /** A system command execution, considered as a flow sink. */
   private class SystemCommandExecutionAsSink extends Sink {
     SystemCommandExecutionAsSink() { this = any(SystemCommandExecution e).getCommand() }
+  }
+
+  /** A call to escapeshellarg() or escapeshellcmd() sanitizes command injection. */
+  private class ShellEscapeSanitizer extends Sanitizer {
+    ShellEscapeSanitizer() {
+      exists(FunctionCall call |
+        this = call and
+        call.getFunctionName() = ["escapeshellarg", "escapeshellcmd"]
+      )
+    }
   }
 }
